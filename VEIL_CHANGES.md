@@ -49,7 +49,9 @@ New VEIL-only files (`VEIL.md`, `VEIL_CHANGES.md`, `VEIL_BASELINE.md`, `Packages
 | `Nook/Components/Sidebar/SpaceSection/SpaceSwitcherTitle.swift` | Space name in `titleTint` of its accent (`#if VEIL_BUILD`) | Dia tints the space name | M2 |
 | `Nook/Components/Sidebar/SpaceSection/SpaceView.swift` | Under `VEIL_BUILD` the separator shows only when there are pinned tabs, and New Tab sits `rowGap` above the tabs | Dia: no divider under favorites, New Tab spaced like a tab row | M2 |
 | `Navigation/Sidebar/SpacesSideBarView.swift` | Under `VEIL_BUILD`: empty `SidebarHeader` left out with the top bar on; content starts at 54pt; space pages ignore the top safe area; 6pt under the favorites; header Downloads button is the download fly-in target; the History button opens the History tab | Dia's sidebar geometry (favorites at 54pt, New Tab at about 101pt) | M2 |
-
+| `Nook/Components/WebsiteView/WebsiteView.swift` | Under `VEIL_BUILD` the split cards show as soon as a tab that could split is dragged (`showsSplitCards`), not only once it reaches the page | Dia shows "Add left/right split" at drag start, which is how split view gets found | M2 |
+| `Nook/Components/Browser/Window/SplitCardView.swift` | Under `VEIL_BUILD`: 313 × 521 at rest, 361 × 599 under the pointer; label `.primary` at rest and the theme's `titleTint` when hovered | Dia's card sizes; Nook's white label vanished in light mode and a grey accent vanished on the dark card | M2 |
+| `Nook/Components/Browser/Window/SplitDropCaptureView.swift` | Under `VEIL_BUILD` the drop hit area is the grown card (361 × 599) | A drop anywhere on the card splits | M2 |
 ## Known Nook identity left in place (by design)
 
 - Logger subsystems and queue labels `com.gstudios.nook` (`SidebarPiPPanel`, `DevPick`, `TabStore`, `DevMCPServer`): internal only, so they stay to keep those files merge-clean. Stream VEIL logs with both subsystems, or by process name `VEIL`.

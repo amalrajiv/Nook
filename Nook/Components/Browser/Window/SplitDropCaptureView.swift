@@ -138,8 +138,14 @@ final class SplitDropCaptureView: NSView {
     /// Card dimensions: 237x394, positioned with 20pt padding from edges
     private func sideForDragInCard(_ sender: NSDraggingInfo) -> SplitViewManager.Side? {
         let loc = convert(sender.draggingLocation, from: nil)
+        #if VEIL_BUILD
+        // The grown card's size, so a drop anywhere on it counts.
+        let cardWidth: CGFloat = 361
+        let cardHeight: CGFloat = 599
+        #else
         let cardWidth: CGFloat = 237
         let cardHeight: CGFloat = 394
+        #endif
         let cardPadding: CGFloat = 20
         
         // Calculate card positions (centered vertically)
