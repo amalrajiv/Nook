@@ -24,7 +24,7 @@ struct SidebarResizeView: View {
     @State private var hoverTask: Task<Void, Never>?
 
     private let minWidth = NookDesign.Size.sidebarMin
-    private let maxWidth: CGFloat = 520
+    private let maxWidth: CGFloat = VeilDesign.sidebarMax
     private let defaultWidth: CGFloat = 250
 
     private var sitsOnRight: Bool {
@@ -102,6 +102,15 @@ struct SidebarResizeView: View {
                             let currentMouseX = value.location.x
                             let mouseMovement = sitsOnRight ? (startingMouseX - currentMouseX) : (currentMouseX - startingMouseX)
                             let newWidth = startingWidth + mouseMovement
+                            // Dragging well past the narrowest width hides the sidebar, as in Dia.
+                            if newWidth < VeilDesign.sidebarCollapseWidth {
+                                isResizing = false
+                                dragLockManager.endDrag(ownerID: dragSessionID)
+                                NSCursor.arrow.set()
+                                browserManager.updateSidebarWidth(startingWidth, for: windowState)
+                                browserManager.toggleSidebar(for: windowState)
+                                return
+                            }
                             let clampedWidth = max(minWidth, min(maxWidth, newWidth))
 
                             browserManager.updateSidebarWidth(clampedWidth, for: windowState)

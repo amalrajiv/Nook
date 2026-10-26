@@ -47,6 +47,8 @@ public struct PinnedTabView<Icon: View>: View {
             ZStack {
                 NookDesign.Radius.shape(NookDesign.Radius.lg)
                     .fill(backgroundColor)
+                    .overlay(NookDesign.Radius.shape(NookDesign.Radius.lg)
+                        .strokeBorder(isActive ? Color.clear : NookDesign.Surface.tileEdge, lineWidth: 0.5))
                     .animation(NookDesign.Motion.quick, value: isHovered)
 
                 tabIcon
@@ -83,6 +85,6 @@ public struct PinnedTabView<Icon: View>: View {
     //MARK: - Colors
     /// Clear when selected: `nookRowSelection` draws the raised surface.
     private var backgroundColor: Color {
-        isActive ? .clear : (isHovered ? NookDesign.Surface.fillPressed : NookDesign.Surface.fill)
+        isActive ? .clear : (isHovered ? NookDesign.Surface.tileFillHover : NookDesign.Surface.tileFill)
     }
 }

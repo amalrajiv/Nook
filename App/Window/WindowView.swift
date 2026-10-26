@@ -56,6 +56,11 @@ struct WindowView: View {
                 .zIndex(10000)
 
         }
+        #if VEIL_BUILD
+        // Dia draws the selected tab in the page card's tint.
+        .environment(\.nookSelectionFill, NookDesign.Surface.cardColor(
+            accent: windowAccent, isActive: windowRegistry.activeWindowId == windowState.id))
+        #endif
         // The window buttons sit in the sidebar's header, so they come and go with it.
         .background(TrafficLights(visible: windowState.isSidebarVisible || hoverSidebarManager.isOverlayVisible))
         .overlayPreferenceValue(DownloadsButtonAnchorKey.self) { anchor in
@@ -183,6 +188,18 @@ struct WindowView: View {
         return tabs.space(spaceID)?.accentHex
     }
 
+    /// The color this window's chrome is drawn in.
+    private var windowAccent: Color {
+        // Private windows keep the neutral incognito accent, never the space's color.
+        if windowState.isIncognito { return SpaceGradient.incognito.primaryColor }
+        #if VEIL_BUILD
+        // Each window draws its own space's color. The shared manager only follows the active
+        // window, and a window that was not active when its space loaded kept the default teal.
+        if let hex = spaceAccentHex { return SpaceGradient.accent(hex: hex).primaryColor }
+        #endif
+        return browserManager.gradientColorManager.accentColor
+    }
+
     private func applyAccent(_ hex: String?) {
         guard let hex, windowRegistry.activeWindowId == windowState.id else { return }
         browserManager.gradientColorManager.setImmediate(SpaceGradient.accent(hex: hex))
@@ -204,8 +221,7 @@ struct WindowView: View {
 
     @ViewBuilder
     private func WindowBackground() -> some View {
-        // Private windows keep the neutral incognito accent, never the space's color.
-        let accent = windowState.isIncognito ? SpaceGradient.incognito.primaryColor : browserManager.gradientColorManager.accentColor
+        let accent = windowAccent
         let isActive = windowRegistry.activeWindowId == windowState.id
 
         NookDesign.Surface.containerGradient(accent: accent, isActive: isActive)
@@ -245,8 +261,8 @@ struct WindowView: View {
         }
         // Apply padding similar to regular sidebar: remove padding when sidebar/AI is visible on that side
         // When sidebar is on left, AI appears on right (trailing); when sidebar is on right, AI appears on left (leading)
-        .padding(.trailing, !bordered || (sidebarVisible && sidebarOnRight) || (aiVisible && sidebarOnLeft) ? 0 : 8)
-        .padding(.leading, !bordered || (sidebarVisible && sidebarOnLeft) || (aiVisible && sidebarOnRight) ? 0 : 8)
+        .padding(.trailing, !bordered || (sidebarVisible && sidebarOnRight) || (aiVisible && sidebarOnLeft) ? 0 : VeilDesign.contentFrame)
+        .padding(.leading, !bordered || (sidebarVisible && sidebarOnLeft) || (aiVisible && sidebarOnRight) ? 0 : VeilDesign.contentFrame)
     }
 
     @ViewBuilder
@@ -327,7 +343,7 @@ struct WindowView: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.bottom, bordered ? 8 : 0)
+        .padding(.bottom, bordered ? VeilDesign.contentFrame : 0)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 

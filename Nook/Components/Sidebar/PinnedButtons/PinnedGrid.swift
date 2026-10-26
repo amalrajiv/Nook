@@ -49,6 +49,24 @@ struct PinnedGrid: View {
                     manager: dragSession,
                     onDrop: { id, position in tabs.dropOnFavorites(id, spaceID: spaceID, index: position.index) }
                 ) {
+                    #if VEIL_BUILD
+                    if isDragging {
+                        favoritesEmptyState(isDragging: isDragging)
+                    } else {
+                        // Dia shows nothing until there is a favorite; a thin strip keeps the drop target.
+                        Color.clear.frame(maxWidth: .infinity).frame(height: NookDesign.Spacing.xs)
+                    }
+                    #else
+                    favoritesEmptyState(isDragging: isDragging)
+                    #endif
+                }
+            } else {
+                favoritesGrid(items: items, columns: columns, colsCount: colsCount, zone: zone, spaceID: spaceID, shouldAnimate: shouldAnimate)
+            }
+        }
+    }
+
+    private func favoritesEmptyState(isDragging: Bool) -> some View {
                     VStack(spacing: NookDesign.Spacing.md) {
                         Image(systemName: "star.circle.fill")
                             .font(.title2)
@@ -78,8 +96,10 @@ struct PinnedGrid: View {
                             .fill(isDragging ? NookDesign.Surface.fillPressed : Color.clear)
                     }
                     .animation(NookDesign.Motion.quick, value: isDragging)
-                }
-            } else {
+    }
+
+    @ViewBuilder
+    private func favoritesGrid(items: [Item], columns: [GridItem], colsCount: Int, zone: DropZoneID, spaceID: UUID, shouldAnimate: Bool) -> some View {
                 NookDropZoneHostView(
                     zoneID: zone,
                     layout: .grid(count: items.count, columns: colsCount),
@@ -111,8 +131,6 @@ struct PinnedGrid: View {
                 .animation(shouldAnimate ? NookDesign.Motion.standard : nil, value: colsCount)
                 .animation(shouldAnimate ? NookDesign.Motion.standard : nil, value: items.count)
                 .allowsHitTesting(!browserManager.isSwitchingSpace)
-            }
-        }
     }
 
     /// The insertion index for the grid during a drag, or nil when no placeholder should show.
@@ -139,6 +157,14 @@ struct PinnedGrid: View {
 
     private func columnCount(for width: CGFloat, itemCount: Int) -> Int {
         guard width > 0, itemCount > 0 else { return 1 }
+        #if VEIL_BUILD
+        // Dia's grid: as few rows as fit (up to five tiles a row, none narrower than 40pt),
+        // then the tiles spread evenly across them: 6 favorites are two rows of three.
+        let gap = NookDesign.Spacing.sm
+        let perRow = min(5, max(1, Int((width + gap) / (40 + gap))))
+        let rows = (itemCount + perRow - 1) / perRow
+        return (itemCount + rows - 1) / rows
+        #else
         var cols = min(maxColumns, itemCount)
         while cols > 1 {
             let needed = CGFloat(cols) * NookDesign.Size.essentialsTile + CGFloat(cols - 1) * NookDesign.Spacing.sm
@@ -146,6 +172,7 @@ struct PinnedGrid: View {
             cols -= 1
         }
         return max(1, cols)
+        #endif
     }
 
     private func makeColumns(count: Int) -> [GridItem] {

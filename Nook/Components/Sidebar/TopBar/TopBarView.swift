@@ -103,6 +103,15 @@ struct TopBarView: View {
 
     private var navigationControls: some View {
         HStack(spacing: 4) {
+            #if VEIL_BUILD
+            Button("Toggle Sidebar", systemImage: nookSettings.sidebarPosition == .left ? "sidebar.left" : "sidebar.right") {
+                browserManager.toggleSidebar(for: windowState)
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(NookIconButtonStyle())
+            .foregroundStyle(navButtonColor)
+            #endif
+
             Button("Go Back", systemImage: "chevron.backward", action: goBack)
                 .labelStyle(.iconOnly)
                 .buttonStyle(NookIconButtonStyle())
@@ -212,7 +221,8 @@ struct TopBarView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(6)
+        .padding(.horizontal, 6)
+        .padding(.vertical, VeilDesign.addressPillVerticalPadding)
         .background(urlBarBackgroundColor)
         .animation(
             shouldAnimateColorChange ? NookDesign.Motion.standard : nil,
@@ -269,7 +279,12 @@ struct TopBarView: View {
         }
         // Fallback to system theme colors when no tab or color available
         // This ensures the top bar has a proper background even before page loads
+        #if VEIL_BUILD
+        // Dia's top bar falls back to the card's tint, not a neutral grey.
+        return NookDesign.Surface.cardColor(accent: browserManager.gradientColorManager.accentColor)
+        #else
         return Color(nsColor: .windowBackgroundColor)
+        #endif
     }
 
     // Nav button color - light on dark backgrounds, dark on light backgrounds
@@ -453,13 +468,25 @@ struct TopBarView: View {
         let cleanHost =
             host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
 
+        #if VEIL_BUILD
+        // Dia flags a plain-http page with a dimmed scheme in front of the host.
+        var hostPart = AttributedString(cleanHost)
+        if url.scheme == "http" {
+            var scheme = AttributedString("http://")
+            scheme.foregroundColor = urlBarTextColor.opacity(0.35)
+            hostPart = scheme + hostPart
+        }
+        #else
+        let hostPart = AttributedString(cleanHost)
+        #endif
+
         if url.path.isEmpty || url.path == "/" {
-            return (AttributedString(cleanHost), "")
+            return (hostPart, "")
         } else {
             let displayTitle = title ?? cleanHost
             var titlePart = AttributedString(" / " + displayTitle)
             titlePart.foregroundColor = urlBarTextColor.opacity(0.35)
-            return (AttributedString(cleanHost), titlePart)
+            return (hostPart, titlePart)
         }
     }
 }

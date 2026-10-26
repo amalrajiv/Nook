@@ -52,7 +52,7 @@ public enum NookDesign {
         // Depth 5 at 20 would eat 100 of a 390pt phone row.
         public static let folderIndent: CGFloat = 16
         #else
-        public static let folderIndent: CGFloat = 20
+        public static let folderIndent: CGFloat = 16   // VEIL: 20 in Nook; Dia indents a folder's tabs 16pt
         #endif
         public static let sidebarTop: CGFloat = 52     // the unified title band; the lights sit centred in it
         public static let trafficLights: CGFloat = 88  // leading space the traffic lights take in the title row
@@ -65,11 +65,11 @@ public enum NookDesign {
         #if os(iOS)
         public static let row: CGFloat = 44
         #else
-        public static let row: CGFloat = 32
+        public static let row: CGFloat = 34   // VEIL: 32 in Nook; Dia-style 34pt tab rows
         #endif
         public static let iconButton: CGFloat = 28
         public static let favicon: CGFloat = 16
-        public static let essentialsTile: CGFloat = 44
+        public static let essentialsTile: CGFloat = 40   // VEIL: 44 in Nook; Dia's favorite tiles are 40pt tall
         public static let essentialsFavicon: CGFloat = 20
         public static let navRow: CGFloat = 28
         #if os(iOS)
@@ -149,7 +149,25 @@ public enum NookDesign {
         public static let tintOpacity: Double = 0.18                       // accent-tinted control: chosen chip, own chat message
         public static let mediaScrim = Color.black.opacity(0.35)           // controls over video
         public static let hairline = Color.primary.opacity(0.08)
-        public static let unloadedOpacity: Double = 0.55
+        #if os(macOS)
+        // VEIL: Dia's favorite tiles are a wash over the window tint (measured dark 10% white,
+        // light 6% black), with a faint edge. Nook used `fill` (4.5% primary) and no edge.
+        public static let tileFill = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.10) : NSColor(white: 0, alpha: 0.06) })
+        public static let tileFillHover = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.14) : NSColor(white: 0, alpha: 0.09) })
+        public static let tileEdge = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.07) })
+        // VEIL: Dia's selected tab: a light 0.5pt edge and, in dark, a soft light halo around it.
+        public static let selectionEdge = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.14) : NSColor(white: 0, alpha: 0.06) })
+        public static let selectionGlow = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.09) : NSColor(white: 0, alpha: 0.08) })
+        static func isDark(_ appearance: NSAppearance) -> Bool { appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua }
+        #else
+        public static let tileFill = fill
+        public static let tileFillHover = fillPressed
+        public static let tileEdge = Color.clear
+        public static let selectionEdge = hairline
+        public static let selectionGlow = Color.black.opacity(0.08)
+        #endif
+        public static let unloadedOpacity: Double = 1   // VEIL: 0.55 in Nook; Dia does not dim unloaded tabs
+        public static let restingTitleOpacity: Double = 0.9   // VEIL: unselected tab titles, a touch softer like Dia's
         public static let dropBorderIdle = Color.secondary.opacity(0.3)    // dashed empty-state drop target
         public static let dropBorderActive = Color.primary.opacity(0.4)    // dashed drop target while dragging
         /// Destructive action fill. Kept at the value the dialog buttons shipped with.
@@ -191,25 +209,57 @@ public enum NookDesign {
         /// color. Inactive windows blend further toward that background, approximating the dimming
         /// NSVisualEffectView.followsWindowActiveState used to give the old blur for free.
         public static func containerGradient(accent: Color, isActive: Bool) -> LinearGradient {
-            let end = windowBackground
-            let topBlend = isActive ? 0.55 : 0.8
+            // VEIL: Dia's window colors. One color for the whole window, the space's hue at a fixed
+            // brightness, that only loses a little saturation toward the bottom, so it reads as a
+            // solid tint rather than a gradient. Measured on Dia for an orange profile: dark
+            // #47312b -> #4b3d39 (brightness 0.28 -> 0.29, saturation 0.39 -> 0.24), light
+            // #eed2c9 -> #f2dcd5 (0.93 -> 0.95, 0.155 -> 0.12). Saturations here are fractions of
+            // the accent's own, so a grey space stays grey. Inactive windows keep 60%.
+            // Nook's version blended the accent into .windowBackgroundColor and faded to it.
+            LinearGradient(colors: [
+                themeTint(accent, isActive: isActive, dark: (0.53, 0.28), light: (0.21, 0.93)),
+                themeTint(accent, isActive: isActive, dark: (0.33, 0.295), light: (0.165, 0.95)),
+            ], startPoint: .top, endPoint: .bottom)
+        }
+
+        /// VEIL: the card's own tint, behind the top bar and an empty page, and the selected tab,
+        /// which Dia draws in the card's color so it reads as joined to the page. Measured on Dia
+        /// (orange): dark #2c221e -> #2f2824, light #fbf2ef.
+        public static func card(accent: Color, isActive: Bool) -> LinearGradient {
+            LinearGradient(colors: [
+                cardColor(accent: accent, isActive: isActive),
+                themeTint(accent, isActive: isActive, dark: (0.32, 0.185), light: (0.05, 0.986)),
+            ], startPoint: .top, endPoint: .bottom)
+        }
+
+        /// VEIL: the space title in the header, tinted like Dia's (measured on orange: dark
+        /// #f5cfc0, light #79361d).
+        public static func titleTint(accent: Color) -> Color {
+            themeTint(accent, isActive: true, dark: (0.30, 0.96), light: (1.04, 0.47))
+        }
+
+        public static func cardColor(accent: Color, isActive: Bool = true) -> Color {
+            themeTint(accent, isActive: isActive, dark: (0.44, 0.175), light: (0.065, 0.984))
+        }
+
+        /// The accent's hue at a fixed brightness, keeping `saturation` of the accent's own
+        /// saturation, resolved per appearance.
+        private static func themeTint(_ accent: Color, isActive: Bool,
+                                      dark: (saturation: CGFloat, brightness: CGFloat),
+                                      light: (saturation: CGFloat, brightness: CGFloat)) -> Color {
+            let strength: CGFloat = isActive ? 1 : 0.6
             #if os(macOS)
-            // Blend per appearance: `blended` freezes `.windowBackgroundColor` to whatever
-            // appearance is current when the body runs, which flips the top light/dark.
-            let base = NSColor(accent)
-            let top = Color(nsColor: NSColor(name: nil) { appearance in
-                var color = base
-                appearance.performAsCurrentDrawingAppearance {
-                    color = base.blended(withFraction: topBlend, of: .windowBackgroundColor) ?? base
-                }
-                return color
+            let tint = NSColor(accent).usingColorSpace(.sRGB) ?? NSColor(accent)
+            var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+            tint.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+            return Color(nsColor: NSColor(name: nil) { appearance in
+                let target = isDark(appearance) ? dark : light
+                return NSColor(hue: hue, saturation: min(1, saturation * target.saturation * strength),
+                               brightness: target.brightness, alpha: 1)
             })
             #else
-            // ponytail: iOS not built yet; NSColor.blended(withFraction:of:) has no UIKit
-            // equivalent. Flat opacity tint stands in until an iOS window chrome exists.
-            let top = accent.opacity(1 - topBlend)
+            return accent.opacity(0.16 * strength)
             #endif
-            return LinearGradient(colors: [top, end], startPoint: .top, endPoint: .bottom)
         }
     }
 

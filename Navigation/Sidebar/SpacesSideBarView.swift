@@ -73,9 +73,18 @@ struct SpacesSideBarView: View {
             }
 
             // Header (window controls, nav buttons, URL bar)
+            #if VEIL_BUILD
+            // With the top bar on, the header is empty; leaving it in still adds a section gap.
+            if !nookSettings.topBarAddressView {
+                SidebarHeader(isSidebarHovered: isSidebarHovered, onNewSpace: showSpaceCreationDialog)
+                    .environmentObject(browserManager)
+                    .environment(windowState)
+            }
+            #else
             SidebarHeader(isSidebarHovered: isSidebarHovered, onNewSpace: showSpaceCreationDialog)
                 .environmentObject(browserManager)
                 .environment(windowState)
+            #endif
 
             // Spaces page view with draggable spacer
             ZStack {
@@ -132,13 +141,14 @@ struct SpacesSideBarView: View {
                 isMenuButtonHovered: $isMenuButtonHovered,
                 onMenuTap: handleMenuTap,
                 onNewSpaceTap: showSpaceCreationDialog,
-                onMenuHover: handleMenuHover
+                onMenuHover: handleMenuHover,
+                onNewProfileTap: showProfileCreationDialog
             )
             .environmentObject(browserManager)
             .environment(windowState)
         }
         // Extra top padding when sidebar is on the left to avoid overlapping native traffic light buttons
-        .padding(.top, nookSettings.sidebarPosition == .left ? NookDesign.Spacing.sidebarTop : NookDesign.Spacing.sidebarInset)
+        .padding(.top, nookSettings.sidebarPosition == .left ? Self.contentTop : NookDesign.Spacing.sidebarInset)
         .overlay(alignment: .topLeading) {
             if nookSettings.sidebarPosition == .left {
                 titleRow
@@ -265,6 +275,95 @@ struct SpacesSideBarView: View {
     // MARK: - Context Menu
 
     private var sidebarContextMenu: some View {
+        #if VEIL_BUILD
+        veilSidebarContextMenu
+        #else
+        nookSidebarContextMenu
+        #endif
+    }
+
+    /// Dia's sidebar menu, mapped onto VEIL's actions: open, organise, new space or profile, layout.
+    private var veilSidebarContextMenu: some View {
+        Group {
+            Button { commandPalette.open() } label: {
+                Label("New Tab", systemImage: "plus.square")
+            }
+            Button { tabs.reopenLastClosed(in: windowState) } label: {
+                Label("Reopen Closed Tab", systemImage: "arrow.uturn.backward")
+            }
+
+            Divider()
+
+            Button {
+                if let spaceID = windowState.spaceID {
+                    tabs.createFolderForRename(in: .tabs(spaceID: spaceID), after: nil)
+                }
+            } label: {
+                Label("New Folder", systemImage: "folder.badge.plus")
+            }
+            if !windowState.isIncognito {
+                Menu {
+                    ForEach(LiveFolderMenuItem.all, id: \.title) { entry in
+                        Button {
+                            if let spaceID = windowState.spaceID { tabs.createLiveFolder(entry.source, in: spaceID) }
+                        } label: {
+                            Label(entry.title, systemImage: entry.symbol)
+                        }
+                    }
+                    Button {
+                        if let spaceID = windowState.spaceID { browserManager.presentFeedFolderPrompt(in: spaceID) }
+                    } label: {
+                        Label("New Feed Folder…", systemImage: "dot.radiowaves.up.forward")
+                    }
+                } label: {
+                    Label("New Live Folder", systemImage: "folder.badge.gearshape")
+                }
+
+                Divider()
+
+                Button { showSpaceCreationDialog() } label: {
+                    Label("New Space…", systemImage: "square.grid.2x2")
+                }
+                Button { showProfileCreationDialog() } label: {
+                    Label("New Profile…", systemImage: "person.badge.plus")
+                }
+            }
+
+            Divider()
+
+            Button { browserManager.toggleSidebar(for: windowState) } label: {
+                Label("Hide Sidebar", systemImage: nookSettings.sidebarPosition == .left ? "sidebar.left" : "sidebar.right")
+            }
+            sidebarPositionMenu
+
+            Divider()
+
+            Button {
+                if let spaceID = windowState.spaceID {
+                    tabs.children(of: .tabs(spaceID: spaceID)).forEach { tabs.remove($0.id) }
+                }
+            } label: {
+                Label("Close All Tabs", systemImage: "xmark")
+            }
+        }
+    }
+
+    private var sidebarPositionMenu: some View {
+        Menu {
+            ForEach(SidebarPosition.allCases) { position in
+                Toggle(isOn: Binding(
+                    get: { nookSettings.sidebarPosition == position },
+                    set: { _ in nookSettings.sidebarPosition = position }
+                )) {
+                    Label(position.displayName, systemImage: position.icon)
+                }
+            }
+        } label: {
+            Label("Position", systemImage: nookSettings.sidebarPosition.icon)
+        }
+    }
+
+    private var nookSidebarContextMenu: some View {
         Group {
             Button {
                 commandPalette.open()
@@ -320,6 +419,9 @@ struct SpacesSideBarView: View {
 
     private func handleMenuTap() {
         withAnimation(NookDesign.Motion.standard) {
+            #if VEIL_BUILD
+            windowState.sidebarMenuSelectedTab = .history
+            #endif
             windowState.isSidebarMenuVisible = true
             windowState.isSidebarAIChatVisible = false
             let previousWidth = windowState.sidebarWidth
@@ -356,6 +458,15 @@ struct SpacesSideBarView: View {
         tabs.setSpace(newID, in: windowState)
     }
 
+    #if VEIL_BUILD
+    // Dia's favorites start 54pt from the window top, 2pt under the title band.
+    private static let contentTop = NookDesign.Spacing.sidebarTop + NookDesign.Spacing.xxs
+    private static let favoritesBottomGap = NookDesign.Spacing.sm   // Dia: about 7pt from the tiles to New Tab
+    #else
+    private static let contentTop = NookDesign.Spacing.sidebarTop
+    private static let favoritesBottomGap = NookDesign.Spacing.sectionGap
+    #endif
+
     @ViewBuilder
     private func makeSpaceView(for space: SpaceRecord) -> some View {
         VStack(spacing: 0) {
@@ -370,7 +481,7 @@ struct SpacesSideBarView: View {
                 .environment(windowRegistry)
                 .environment(nookSettings)
                 .padding(.horizontal, NookDesign.Spacing.sidebarInset)
-                .padding(.bottom, NookDesign.Spacing.sectionGap)
+                .padding(.bottom, Self.favoritesBottomGap)
             }
 
             SpaceView(
@@ -392,12 +503,36 @@ struct SpacesSideBarView: View {
             .id(space.id.uuidString + "-w\(Int(windowState.sidebarContentWidth))")
             Spacer()
         }
+        #if VEIL_BUILD
+        // Each page is its own hosting view and took the title bar's safe area again, 14pt
+        // below where the sidebar already starts.
+        .ignoresSafeArea(.container, edges: .top)
+        #endif
     }
 
     /// Back, forward and reload at the trailing edge, unless the URL bar mode has them.
     private var titleRow: some View {
         HStack(spacing: 0) {
+            #if VEIL_BUILD
+            if nookSettings.topBarAddressView {
+                SpaceSwitcherTitle(onNewSpace: showSpaceCreationDialog)
+                    .environmentObject(browserManager)
+                    .environment(windowState)
+            }
+            #endif
             Spacer(minLength: 0)
+            #if VEIL_BUILD
+            // Dia's header shows a downloads button while there are recent downloads.
+            if nookSettings.topBarAddressView && !browserManager.downloadManager.recentDownloads.isEmpty {
+                Button("Downloads", systemImage: "arrow.down.circle") {
+                    browserManager.showDownloads()
+                }
+                .symbolEffect(.bounce, value: browserManager.downloadManager.completedCount)
+                .nookIconButtons()
+                // A finished download flies into this button, not the footer's.
+                .anchorPreference(key: DownloadsButtonAnchorKey.self, value: .bounds) { $0 }
+            }
+            #endif
             if !nookSettings.topBarAddressView {
                 SidebarHistoryButtons()
                     .environmentObject(browserManager)
@@ -407,6 +542,28 @@ struct SpacesSideBarView: View {
     }
 
     // MARK: - Dialogs
+
+    /// A new space with its own website data store: separate logins, cookies and history.
+    private func showProfileCreationDialog() {
+        browserManager.dialogManager.showDialog(
+            SpaceCreationDialog(
+                onCreate: { name, accentHex in
+                    if let spaceID = tabs.createSpace(
+                        name: name.isEmpty ? "New Profile" : name,
+                        icon: "square.grid.2x2",
+                        accentHex: accentHex,
+                        after: tabs.orderedSpaces.last?.id,
+                        sharingLoginsWith: nil,
+                        profileName: name.isEmpty ? nil : name
+                    ) {
+                        tabs.setSpace(spaceID, in: windowState)
+                    }
+                    browserManager.dialogManager.closeDialog()
+                },
+                onCancel: { browserManager.dialogManager.closeDialog() }
+            )
+        )
+    }
 
     private func showSpaceCreationDialog() {
         browserManager.dialogManager.showDialog(

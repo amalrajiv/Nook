@@ -269,7 +269,7 @@ public final class PageSession: NSObject, Identifiable {
         self.title = title
         self.isPrivate = isPrivate
         self.controller = controller
-        self.favicon = SwiftUI.Image(systemName: "globe")
+        self.favicon = SwiftUI.Image(systemName: "app.fill")   // VEIL: "globe" in Nook
         super.init()
         restoreFaviconFromCache()
     }
@@ -735,7 +735,7 @@ public final class PageSession: NSObject, Identifiable {
     }
 
     func fetchAndSetFavicon(for url: URL) async {
-        let defaultFavicon = SwiftUI.Image(systemName: "globe")
+        let defaultFavicon = SwiftUI.Image(systemName: "app.fill")   // VEIL: "globe" in Nook
         guard url.scheme == "http" || url.scheme == "https", url.host != nil else {
             favicon = defaultFavicon
             return
