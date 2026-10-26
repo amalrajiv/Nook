@@ -119,7 +119,8 @@ public struct SpaceTab: View {
                         .overlay(alignment: .leading) {
                             Text(title)
                                 .font(NookDesign.Font.bodyRegular)
-                                .foregroundStyle(.primary)
+                                // VEIL: Dia draws only the selected title at full strength.
+                                .foregroundStyle(.primary.opacity(isCurrentTab ? 1 : NookDesign.Surface.restingTitleOpacity))
                                 .lineLimit(1)
                                 .fixedSize(horizontal: true, vertical: false)
                                 .id(title)

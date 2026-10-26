@@ -73,9 +73,18 @@ struct SpacesSideBarView: View {
             }
 
             // Header (window controls, nav buttons, URL bar)
+            #if VEIL_BUILD
+            // With the top bar on, the header is empty; leaving it in still adds a section gap.
+            if !nookSettings.topBarAddressView {
+                SidebarHeader(isSidebarHovered: isSidebarHovered, onNewSpace: showSpaceCreationDialog)
+                    .environmentObject(browserManager)
+                    .environment(windowState)
+            }
+            #else
             SidebarHeader(isSidebarHovered: isSidebarHovered, onNewSpace: showSpaceCreationDialog)
                 .environmentObject(browserManager)
                 .environment(windowState)
+            #endif
 
             // Spaces page view with draggable spacer
             ZStack {
@@ -139,7 +148,7 @@ struct SpacesSideBarView: View {
             .environment(windowState)
         }
         // Extra top padding when sidebar is on the left to avoid overlapping native traffic light buttons
-        .padding(.top, nookSettings.sidebarPosition == .left ? NookDesign.Spacing.sidebarTop : NookDesign.Spacing.sidebarInset)
+        .padding(.top, nookSettings.sidebarPosition == .left ? Self.contentTop : NookDesign.Spacing.sidebarInset)
         .overlay(alignment: .topLeading) {
             if nookSettings.sidebarPosition == .left {
                 titleRow
@@ -410,6 +419,9 @@ struct SpacesSideBarView: View {
 
     private func handleMenuTap() {
         withAnimation(NookDesign.Motion.standard) {
+            #if VEIL_BUILD
+            windowState.sidebarMenuSelectedTab = .history
+            #endif
             windowState.isSidebarMenuVisible = true
             windowState.isSidebarAIChatVisible = false
             let previousWidth = windowState.sidebarWidth
@@ -446,6 +458,15 @@ struct SpacesSideBarView: View {
         tabs.setSpace(newID, in: windowState)
     }
 
+    #if VEIL_BUILD
+    // Dia's favorites start 54pt from the window top, 2pt under the title band.
+    private static let contentTop = NookDesign.Spacing.sidebarTop + NookDesign.Spacing.xxs
+    private static let favoritesBottomGap = NookDesign.Spacing.sm   // Dia: about 7pt from the tiles to New Tab
+    #else
+    private static let contentTop = NookDesign.Spacing.sidebarTop
+    private static let favoritesBottomGap = NookDesign.Spacing.sectionGap
+    #endif
+
     @ViewBuilder
     private func makeSpaceView(for space: SpaceRecord) -> some View {
         VStack(spacing: 0) {
@@ -460,7 +481,7 @@ struct SpacesSideBarView: View {
                 .environment(windowRegistry)
                 .environment(nookSettings)
                 .padding(.horizontal, NookDesign.Spacing.sidebarInset)
-                .padding(.bottom, NookDesign.Spacing.sectionGap)
+                .padding(.bottom, Self.favoritesBottomGap)
             }
 
             SpaceView(
@@ -482,6 +503,11 @@ struct SpacesSideBarView: View {
             .id(space.id.uuidString + "-w\(Int(windowState.sidebarContentWidth))")
             Spacer()
         }
+        #if VEIL_BUILD
+        // Each page is its own hosting view and took the title bar's safe area again, 14pt
+        // below where the sidebar already starts.
+        .ignoresSafeArea(.container, edges: .top)
+        #endif
     }
 
     /// Back, forward and reload at the trailing edge, unless the URL bar mode has them.
@@ -503,6 +529,8 @@ struct SpacesSideBarView: View {
                 }
                 .symbolEffect(.bounce, value: browserManager.downloadManager.completedCount)
                 .nookIconButtons()
+                // A finished download flies into this button, not the footer's.
+                .anchorPreference(key: DownloadsButtonAnchorKey.self, value: .bounds) { $0 }
             }
             #endif
             if !nookSettings.topBarAddressView {

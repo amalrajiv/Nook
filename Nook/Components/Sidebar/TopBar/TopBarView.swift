@@ -279,7 +279,12 @@ struct TopBarView: View {
         }
         // Fallback to system theme colors when no tab or color available
         // This ensures the top bar has a proper background even before page loads
+        #if VEIL_BUILD
+        // Dia's top bar falls back to the card's tint, not a neutral grey.
+        return NookDesign.Surface.cardColor(accent: browserManager.gradientColorManager.accentColor)
+        #else
         return Color(nsColor: .windowBackgroundColor)
+        #endif
     }
 
     // Nav button color - light on dark backgrounds, dark on light backgrounds

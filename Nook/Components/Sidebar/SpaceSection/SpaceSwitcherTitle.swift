@@ -57,7 +57,13 @@ struct SpaceSwitcherTitle: View {
             if space.isAgent {
                 Image(systemName: "sparkles").foregroundStyle(NookDesign.Surface.agentGradient)
             }
+            #if VEIL_BUILD
+            // Dia tints the space name with the theme color.
+            Text(space.name).foregroundStyle(space.isAgent ? Color.primary
+                : NookDesign.Surface.titleTint(accent: SpaceGradient.accent(hex: space.accentHex).primaryColor))
+            #else
             Text(space.name).foregroundStyle(.primary)
+            #endif
         }
             .font(NookDesign.Font.label)
             .lineLimit(1)

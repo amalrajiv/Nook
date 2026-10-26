@@ -26,16 +26,35 @@ public extension View {
     /// The selected sidebar row or pinned tile. Branch-free so view identity is stable and the
     /// change animates; the row applies its own `.raised` elevation.
     func nookRowSelection(_ isSelected: Bool, radius: CGFloat = NookDesign.Radius.md) -> some View {
-        let shape = NookDesign.Radius.shape(radius)
-        // VEIL: Nook draws a 1pt 8% hairline; Dia's selected pill has a brighter 0.5pt edge and a soft shadow.
-        return background(shape.fill(isSelected ? NookDesign.Surface.raised : .clear)
-                .shadow(color: .black.opacity(isSelected ? 0.22 : 0), radius: 6, y: 1))
-            .overlay(shape.strokeBorder(Color.primary.opacity(isSelected ? 0.16 : 0), lineWidth: 0.5))
+        modifier(RowSelectionModifier(isSelected: isSelected, radius: radius))
     }
 
     /// A sidebar chrome control or group: history, sidebar and AI toggles, bottom bar buttons,
     /// search fields, filter chips. `tint` marks the chosen one of a set.
     func nookControlSurface<S: InsettableShape>(_ isOn: Bool = true, tint: Color? = nil, in shape: S) -> some View {
         background(shape.fill(isOn ? (tint?.opacity(NookDesign.Surface.tintOpacity) ?? NookDesign.Surface.fill) : .clear))
+    }
+}
+
+// MARK: - Row selection
+
+public extension EnvironmentValues {
+    /// VEIL: the selected row's fill. The window sets it to its card tint, as Dia draws the
+    /// selected tab in the page card's color; nil keeps Nook's `Surface.raised`.
+    @Entry var nookSelectionFill: Color? = nil
+}
+
+private struct RowSelectionModifier: ViewModifier {
+    let isSelected: Bool
+    let radius: CGFloat
+    @Environment(\.nookSelectionFill) private var selectionFill
+
+    func body(content: Content) -> some View {
+        let shape = NookDesign.Radius.shape(radius)
+        // VEIL: Nook draws a 1pt 8% hairline; Dia's selected pill has a light 0.5pt edge and a soft halo.
+        content
+            .background(shape.fill(isSelected ? (selectionFill ?? NookDesign.Surface.raised) : .clear)
+                .shadow(color: isSelected ? NookDesign.Surface.selectionGlow : .clear, radius: 8))
+            .overlay(shape.strokeBorder(isSelected ? NookDesign.Surface.selectionEdge : .clear, lineWidth: 0.5))
     }
 }

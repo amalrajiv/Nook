@@ -64,8 +64,8 @@ struct SpaceView: View {
                         .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
                 }
 
-                VStack(spacing: NookDesign.Spacing.sectionGap) {
-                    separatorAndNewTab(regular: regular)
+                VStack(spacing: Self.newTabGap) {
+                    separatorAndNewTab(regular: regular, hasPinned: !pinned.isEmpty || dragSession.isDragging)
                     sectionList(.tabs(spaceID: spaceID), rows: regular, split: split, showsTail: true)
                 }
             }
@@ -206,9 +206,22 @@ struct SpaceView: View {
 
     // MARK: - Separator and New Tab
 
-    private func separatorAndNewTab(regular: [Row]) -> some View {
+    #if VEIL_BUILD
+    private static let newTabGap = NookDesign.Spacing.rowGap   // Dia spaces New Tab like a tab row
+    #else
+    private static let newTabGap = NookDesign.Spacing.sectionGap
+    #endif
+
+    private func separatorAndNewTab(regular: [Row], hasPinned: Bool) -> some View {
         let looseTabs = regular.filter { $0.depth == 0 && !$0.item.isFolder }.map(\.item.id)
+        #if VEIL_BUILD
+        // Dia has no divider under the favorites; VEIL keeps one only under pinned tabs.
+        let showsSeparator = hasPinned
+        #else
+        let showsSeparator = true
+        #endif
         return VStack(spacing: NookDesign.Spacing.xs) {
+            if showsSeparator {
             SpaceSeparator(
                 isHovering: $isSidebarHovered,
                 // Clear empties the section: a tab goes with its whole trail.
@@ -222,6 +235,7 @@ struct SpaceView: View {
                 tabCount: looseTabs.count
             )
             .padding(.horizontal, NookDesign.Spacing.md)
+            }
 
             newTabButton
         }

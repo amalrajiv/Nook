@@ -46,6 +46,13 @@ struct SidebarBottomBar: View {
     }
     
     private var menuButton: some View {
+        #if VEIL_BUILD
+        // Downloads have their own button in the header, so this one is History only.
+        Button("History", systemImage: "clock.arrow.circlepath") {
+            onMenuTap()
+        }
+        .nookIconButtons()
+        #else
         ZStack {
             Button("Menu", systemImage: "archivebox") {
                 onMenuTap()
@@ -62,6 +69,7 @@ struct SidebarBottomBar: View {
             DownloadIndicator()
                 .offset(x: NookDesign.Spacing.lg, y: -NookDesign.Spacing.lg)
         }
+        #endif
     }
     
     private var newSpaceButton: some View {

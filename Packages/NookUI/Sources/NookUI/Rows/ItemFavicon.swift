@@ -47,7 +47,7 @@ public struct ItemFavicon: View {
         (session?.favicon ?? cached ?? Image(systemName: "app.fill"))   // VEIL: "globe" in Nook
             .resizable()
             .scaledToFit()
-            .foregroundStyle(.tertiary)   // only tints the symbol placeholder; bitmap favicons ignore it
+            .foregroundStyle(.quaternary)   // only tints the symbol placeholder; bitmap favicons ignore it. VEIL: .tertiary in Nook; Dia's grey square is fainter
             // Keyed on the session too: closing a pinned tab or favorite ends its page but keeps
             // the row, and the cached icon must be loaded then.
             .task(id: "\(item.url?.host ?? "")|\(session == nil)") {

@@ -33,6 +33,9 @@ Timings from a 60 Hz screen recording are ±17 ms.
 | Folder child indent | 20 | **16** | 16 |
 | Sidebar tint, dark (top → bottom) | accent 55% → window bg | **orange preset #47332c → #4b3e39** | #47312b → #4b3d39 (orange profile) |
 | Sidebar tint, light | same | **orange preset #edd3c9 → #f2ddd6** | #eed2c9 → #f2dcd5 |
+| Favorites top / tile height (from window top) | 66 / 44 | **54 / 40** | 54 / 40 |
+| New Tab row top | 139 | **100** | 101.5 |
+| Selected tab fill, dark (orange) | neutral #1c1c1e | **#2d221e** (card tint) | #2c241f |
 
 ## Geometry read from the running app (M0)
 

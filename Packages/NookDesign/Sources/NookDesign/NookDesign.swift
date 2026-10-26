@@ -69,7 +69,7 @@ public enum NookDesign {
         #endif
         public static let iconButton: CGFloat = 28
         public static let favicon: CGFloat = 16
-        public static let essentialsTile: CGFloat = 44
+        public static let essentialsTile: CGFloat = 40   // VEIL: 44 in Nook; Dia's favorite tiles are 40pt tall
         public static let essentialsFavicon: CGFloat = 20
         public static let navRow: CGFloat = 28
         #if os(iOS)
@@ -149,7 +149,25 @@ public enum NookDesign {
         public static let tintOpacity: Double = 0.18                       // accent-tinted control: chosen chip, own chat message
         public static let mediaScrim = Color.black.opacity(0.35)           // controls over video
         public static let hairline = Color.primary.opacity(0.08)
+        #if os(macOS)
+        // VEIL: Dia's favorite tiles are a wash over the window tint (measured dark 10% white,
+        // light 6% black), with a faint edge. Nook used `fill` (4.5% primary) and no edge.
+        public static let tileFill = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.10) : NSColor(white: 0, alpha: 0.06) })
+        public static let tileFillHover = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.14) : NSColor(white: 0, alpha: 0.09) })
+        public static let tileEdge = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.07) })
+        // VEIL: Dia's selected tab: a light 0.5pt edge and, in dark, a soft light halo around it.
+        public static let selectionEdge = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.14) : NSColor(white: 0, alpha: 0.06) })
+        public static let selectionGlow = Color(nsColor: NSColor(name: nil) { isDark($0) ? NSColor(white: 1, alpha: 0.09) : NSColor(white: 0, alpha: 0.08) })
+        static func isDark(_ appearance: NSAppearance) -> Bool { appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua }
+        #else
+        public static let tileFill = fill
+        public static let tileFillHover = fillPressed
+        public static let tileEdge = Color.clear
+        public static let selectionEdge = hairline
+        public static let selectionGlow = Color.black.opacity(0.08)
+        #endif
         public static let unloadedOpacity: Double = 1   // VEIL: 0.55 in Nook; Dia does not dim unloaded tabs
+        public static let restingTitleOpacity: Double = 0.9   // VEIL: unselected tab titles, a touch softer like Dia's
         public static let dropBorderIdle = Color.secondary.opacity(0.3)    // dashed empty-state drop target
         public static let dropBorderActive = Color.primary.opacity(0.4)    // dashed drop target while dragging
         /// Destructive action fill. Kept at the value the dialog buttons shipped with.
@@ -198,26 +216,50 @@ public enum NookDesign {
             // #eed2c9 -> #f2dcd5 (0.93 -> 0.95, 0.155 -> 0.12). Saturations here are fractions of
             // the accent's own, so a grey space stays grey. Inactive windows keep 60%.
             // Nook's version blended the accent into .windowBackgroundColor and faded to it.
+            LinearGradient(colors: [
+                themeTint(accent, isActive: isActive, dark: (0.53, 0.28), light: (0.21, 0.93)),
+                themeTint(accent, isActive: isActive, dark: (0.33, 0.295), light: (0.165, 0.95)),
+            ], startPoint: .top, endPoint: .bottom)
+        }
+
+        /// VEIL: the card's own tint, behind the top bar and an empty page, and the selected tab,
+        /// which Dia draws in the card's color so it reads as joined to the page. Measured on Dia
+        /// (orange): dark #2c221e -> #2f2824, light #fbf2ef.
+        public static func card(accent: Color, isActive: Bool) -> LinearGradient {
+            LinearGradient(colors: [
+                cardColor(accent: accent, isActive: isActive),
+                themeTint(accent, isActive: isActive, dark: (0.32, 0.185), light: (0.05, 0.986)),
+            ], startPoint: .top, endPoint: .bottom)
+        }
+
+        /// VEIL: the space title in the header, tinted like Dia's (measured on orange: dark
+        /// #f5cfc0, light #79361d).
+        public static func titleTint(accent: Color) -> Color {
+            themeTint(accent, isActive: true, dark: (0.30, 0.96), light: (1.04, 0.47))
+        }
+
+        public static func cardColor(accent: Color, isActive: Bool = true) -> Color {
+            themeTint(accent, isActive: isActive, dark: (0.44, 0.175), light: (0.065, 0.984))
+        }
+
+        /// The accent's hue at a fixed brightness, keeping `saturation` of the accent's own
+        /// saturation, resolved per appearance.
+        private static func themeTint(_ accent: Color, isActive: Bool,
+                                      dark: (saturation: CGFloat, brightness: CGFloat),
+                                      light: (saturation: CGFloat, brightness: CGFloat)) -> Color {
             let strength: CGFloat = isActive ? 1 : 0.6
             #if os(macOS)
             let tint = NSColor(accent).usingColorSpace(.sRGB) ?? NSColor(accent)
             var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
             tint.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
-            func stop(dark: (saturation: CGFloat, brightness: CGFloat), light: (saturation: CGFloat, brightness: CGFloat)) -> Color {
-                Color(nsColor: NSColor(name: nil) { appearance in
-                    let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                    let target = isDark ? dark : light
-                    return NSColor(hue: hue, saturation: min(1, saturation * target.saturation * strength),
-                                   brightness: target.brightness, alpha: 1)
-                })
-            }
-            let top = stop(dark: (0.53, 0.28), light: (0.21, 0.93))
-            let end = stop(dark: (0.33, 0.295), light: (0.165, 0.95))
+            return Color(nsColor: NSColor(name: nil) { appearance in
+                let target = isDark(appearance) ? dark : light
+                return NSColor(hue: hue, saturation: min(1, saturation * target.saturation * strength),
+                               brightness: target.brightness, alpha: 1)
+            })
             #else
-            let top = accent.opacity(0.16 * strength)
-            let end = accent.opacity(0.08 * strength)
+            return accent.opacity(0.16 * strength)
             #endif
-            return LinearGradient(colors: [top, end], startPoint: .top, endPoint: .bottom)
         }
     }
 

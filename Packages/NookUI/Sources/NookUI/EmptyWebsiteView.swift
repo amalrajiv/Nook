@@ -25,7 +25,8 @@ public struct EmptyWebsiteView: View {
                 let accent = windowState.isIncognito ? NookDesign.Surface.incognitoAccent : (actions?.accentColor ?? .accentColor)
                 let isActive = windowRegistry.activeWindowId == windowState.id
 
-                NookDesign.Surface.containerGradient(accent: accent, isActive: isActive)
+                // VEIL: the card's own tint, as Dia's empty page is (Nook: the window gradient).
+                NookDesign.Surface.card(accent: accent, isActive: isActive)
                     .clipShape(NookDesign.Radius.shape(NookDesign.Radius.lg))
                     .nookElevation(.raised)
                     .animation(NookDesign.Motion.standard, value: isActive)
