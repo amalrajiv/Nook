@@ -112,13 +112,13 @@ public struct SpaceTab: View {
                     // Hidden shrinkable copy sizes the row; the visible copy is laid out at
                     // full width and faded, so long titles never widen the row.
                     Text(title)
-                        .font(NookDesign.Font.body)
+                        .font(NookDesign.Font.bodyRegular)   // VEIL: Font.body (medium) in Nook; Dia's titles are regular
                         .lineLimit(1)
                         .hidden()
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .overlay(alignment: .leading) {
                             Text(title)
-                                .font(NookDesign.Font.body)
+                                .font(NookDesign.Font.bodyRegular)
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
                                 .fixedSize(horizontal: true, vertical: false)

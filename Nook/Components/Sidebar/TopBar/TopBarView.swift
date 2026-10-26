@@ -103,6 +103,15 @@ struct TopBarView: View {
 
     private var navigationControls: some View {
         HStack(spacing: 4) {
+            #if VEIL_BUILD
+            Button("Toggle Sidebar", systemImage: nookSettings.sidebarPosition == .left ? "sidebar.left" : "sidebar.right") {
+                browserManager.toggleSidebar(for: windowState)
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(NookIconButtonStyle())
+            .foregroundStyle(navButtonColor)
+            #endif
+
             Button("Go Back", systemImage: "chevron.backward", action: goBack)
                 .labelStyle(.iconOnly)
                 .buttonStyle(NookIconButtonStyle())

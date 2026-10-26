@@ -397,6 +397,13 @@ struct SpacesSideBarView: View {
     /// Back, forward and reload at the trailing edge, unless the URL bar mode has them.
     private var titleRow: some View {
         HStack(spacing: 0) {
+            #if VEIL_BUILD
+            if nookSettings.topBarAddressView {
+                SpaceSwitcherTitle(onNewSpace: showSpaceCreationDialog)
+                    .environmentObject(browserManager)
+                    .environment(windowState)
+            }
+            #endif
             Spacer(minLength: 0)
             if !nookSettings.topBarAddressView {
                 SidebarHistoryButtons()

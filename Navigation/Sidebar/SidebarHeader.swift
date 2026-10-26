@@ -22,7 +22,15 @@ struct SidebarHeader: View {
 
     var body: some View {
         VStack(spacing: NookDesign.Spacing.sectionGap) {
+            #if VEIL_BUILD
+            // Dia's layout: the space name moved into the traffic-light row and the sidebar
+            // toggle into the top bar, so this row has nothing left to show.
+            if !nookSettings.topBarAddressView {
+                windowControls
+            }
+            #else
             windowControls
+            #endif
 
             if !nookSettings.topBarAddressView {
                 urlBar

@@ -26,6 +26,12 @@ New VEIL-only files (`VEIL.md`, `VEIL_CHANGES.md`, `VEIL_BASELINE.md`, `Packages
 | `Nook/Components/Sidebar/SidebarResizeView.swift` | Max width `VeilDesign.sidebarMax` (440); dragging below `sidebarCollapseWidth` (100) hides the sidebar | Dia's resize and drag-to-collapse | M2 |
 | `Nook/Components/Sidebar/TopBar/TopBarView.swift` | Address pill vertical padding `VeilDesign.addressPillVerticalPadding` (1 in VEIL, 6 in Nook) | Dia's 30pt hover pill | M2 |
 | `Packages/NookDesign/Sources/NookDesign/NookDesign.swift` | macOS `Size.row` 32 → 34 (one line; packages don't see `VEIL_BUILD`) | Dia's 34pt tab rows; drag hit-testing reads the same token | M2 |
+| `Navigation/Sidebar/SpacesSideBarView.swift` | With the top bar on, the space name sits in the traffic-light row (`#if VEIL_BUILD`) | Dia's one-row sidebar header | M2 |
+| `Navigation/Sidebar/SidebarHeader.swift` | With the top bar on, the second header row (sidebar toggle + space name) is not shown | Same | M2 |
+| `Nook/Components/Sidebar/TopBar/TopBarView.swift` | Sidebar toggle button before Back (`#if VEIL_BUILD`) | Dia keeps it in the top bar | M2 |
+| `Nook/Components/Sidebar/PinnedButtons/PinnedGrid.swift` | Always four columns; the "Drag to add Favorites" box only shows while dragging (body split into two helpers) | Dia's fixed-size tiles, no empty box | M2 |
+| `Packages/NookDesign/Sources/NookDesign/NookDesign.swift` | `containerGradient` blends 0.72 → 0.70 toward the window background (Nook: 0.55 → plain background); `unloadedOpacity` 0.55 → 1 | Dia's even, darker tint; Dia doesn't dim unloaded tabs | M2 |
+| `Packages/NookUI/Sources/NookUI/Rows/SpaceTab.swift` | Tab title font `bodyRegular` (Nook: `body`, medium) | Dia's regular-weight titles | M2 |
 
 ## Known Nook identity left in place (by design)
 

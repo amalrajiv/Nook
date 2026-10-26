@@ -149,7 +149,7 @@ public enum NookDesign {
         public static let tintOpacity: Double = 0.18                       // accent-tinted control: chosen chip, own chat message
         public static let mediaScrim = Color.black.opacity(0.35)           // controls over video
         public static let hairline = Color.primary.opacity(0.08)
-        public static let unloadedOpacity: Double = 0.55
+        public static let unloadedOpacity: Double = 1   // VEIL: 0.55 in Nook; Dia does not dim unloaded tabs
         public static let dropBorderIdle = Color.secondary.opacity(0.3)    // dashed empty-state drop target
         public static let dropBorderActive = Color.primary.opacity(0.4)    // dashed drop target while dragging
         /// Destructive action fill. Kept at the value the dialog buttons shipped with.
@@ -191,23 +191,30 @@ public enum NookDesign {
         /// color. Inactive windows blend further toward that background, approximating the dimming
         /// NSVisualEffectView.followsWindowActiveState used to give the old blur for free.
         public static func containerGradient(accent: Color, isActive: Bool) -> LinearGradient {
-            let end = windowBackground
-            let topBlend = isActive ? 0.55 : 0.8
+            // VEIL: Nook blends 0.55 at the top and fades to the plain window background; Dia keeps a
+            // visible tint from top to bottom, so both stops carry the accent.
+            let topBlend = isActive ? 0.72 : 0.85
+            let bottomBlend = isActive ? 0.7 : 0.85
             #if os(macOS)
             // Blend per appearance: `blended` freezes `.windowBackgroundColor` to whatever
             // appearance is current when the body runs, which flips the top light/dark.
             let base = NSColor(accent)
-            let top = Color(nsColor: NSColor(name: nil) { appearance in
-                var color = base
-                appearance.performAsCurrentDrawingAppearance {
-                    color = base.blended(withFraction: topBlend, of: .windowBackgroundColor) ?? base
-                }
-                return color
-            })
+            func tint(_ fraction: Double) -> Color {
+                Color(nsColor: NSColor(name: nil) { appearance in
+                    var color = base
+                    appearance.performAsCurrentDrawingAppearance {
+                        color = base.blended(withFraction: fraction, of: .windowBackgroundColor) ?? base
+                    }
+                    return color
+                })
+            }
+            let top = tint(topBlend)
+            let end = tint(bottomBlend)
             #else
             // ponytail: iOS not built yet; NSColor.blended(withFraction:of:) has no UIKit
             // equivalent. Flat opacity tint stands in until an iOS window chrome exists.
             let top = accent.opacity(1 - topBlend)
+            let end = accent.opacity(1 - bottomBlend)
             #endif
             return LinearGradient(colors: [top, end], startPoint: .top, endPoint: .bottom)
         }
