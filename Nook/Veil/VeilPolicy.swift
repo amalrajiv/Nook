@@ -24,6 +24,13 @@ enum VeilPolicy {
         settings.showAIAssistant = false
         settings.tabOrganizerEnabled = false
 
+        // Dia's layout: the address bar sits on top of the page. Set once so Settings can undo it.
+        let didSetTopBarKey = "veil.didSetTopBar"
+        if !UserDefaults.standard.bool(forKey: didSetTopBarKey) {
+            settings.topBarAddressView = true
+            UserDefaults.standard.set(true, forKey: didSetTopBarKey)
+        }
+
         // DuckDuckGo is VEIL's default search, set once so a later choice in Settings sticks.
         let didSetSearchKey = "veil.didSetDefaultSearch"
         if !UserDefaults.standard.bool(forKey: didSetSearchKey) {

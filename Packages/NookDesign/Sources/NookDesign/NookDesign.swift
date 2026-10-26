@@ -65,7 +65,7 @@ public enum NookDesign {
         #if os(iOS)
         public static let row: CGFloat = 44
         #else
-        public static let row: CGFloat = 32
+        public static let row: CGFloat = 34   // VEIL: 32 in Nook; Dia-style 34pt tab rows
         #endif
         public static let iconButton: CGFloat = 28
         public static let favicon: CGFloat = 16

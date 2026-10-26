@@ -21,6 +21,11 @@ New VEIL-only files (`VEIL.md`, `VEIL_CHANGES.md`, `VEIL_BASELINE.md`, `Packages
 | `Nook/Components/WebsiteView/BlockedPageView.swift` | "Nook blocked this page" / "the ad blocker's filter lists" → Veil Guard | Veil Guard name | M1 |
 | `Packages/NookUI/Sources/NookUI/Settings/General.swift` | "Warn before quitting VEIL"; "Automatically update Nook" hidden when the bundle ID is VEIL's (packages don't see `VEIL_BUILD`) | App name; VEIL has no updater | M1 |
 | App-name text only (one string each): `Nook/Managers/DialogManager/DialogManager.swift`, `.../Dialogs/SettingsDialog.swift`, `AuthenticationManager.swift`, `BrowserManager.swift` (window titles), `Nook/Browser/TabsController+macOS.swift`, `Settings/Tabs/Developer.swift` (also the token path), `ExtensionPermissionView.swift`, `ExtensionLibraryMoreMenu.swift`, `Onboarding/Stages/HelloStage.swift`, `ImportStage.swift` | "Nook" → "VEIL" where the app names itself | Approved rebrand | M1 |
+| `App/Window/WindowView.swift` | Side and bottom content insets use `VeilDesign.contentFrame` (6 in VEIL, 8 in Nook) | Dia's 6pt frame | M2 |
+| `Nook/Components/WebsiteView/WebsiteLoadingIndicator.swift` | Band height uses `VeilDesign.contentFrame` (it is the frame above the card) | Dia's 6pt top frame | M2 |
+| `Nook/Components/Sidebar/SidebarResizeView.swift` | Max width `VeilDesign.sidebarMax` (440); dragging below `sidebarCollapseWidth` (100) hides the sidebar | Dia's resize and drag-to-collapse | M2 |
+| `Nook/Components/Sidebar/TopBar/TopBarView.swift` | Address pill vertical padding `VeilDesign.addressPillVerticalPadding` (1 in VEIL, 6 in Nook) | Dia's 30pt hover pill | M2 |
+| `Packages/NookDesign/Sources/NookDesign/NookDesign.swift` | macOS `Size.row` 32 → 34 (one line; packages don't see `VEIL_BUILD`) | Dia's 34pt tab rows; drag hit-testing reads the same token | M2 |
 
 ## Known Nook identity left in place (by design)
 

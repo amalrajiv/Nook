@@ -212,7 +212,8 @@ struct TopBarView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(6)
+        .padding(.horizontal, 6)
+        .padding(.vertical, VeilDesign.addressPillVerticalPadding)
         .background(urlBarBackgroundColor)
         .animation(
             shouldAnimateColorChange ? NookDesign.Motion.standard : nil,

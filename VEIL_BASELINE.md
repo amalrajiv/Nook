@@ -19,6 +19,17 @@ Timings from a 60 Hz screen recording are ±17 ms.
 | Space switch | — | Not measured in M0: synthetic typing did not reach the New Space dialog's name field. Measure in M4 |
 | Input-to-paint latency | — | Not measured: needs an event-timestamped capture harness (Nook ships `docs/perf/launch_probe.py` locally; M2 task) |
 
+## Geometry after M2 (measured on the running app, 2× capture)
+
+| Item | M0 | M2 | Dia (audit) |
+|---|---|---|---|
+| Frame around the card (top / side / bottom) | 8 / 8 / 8 | **6 / 6 / 6** | 6 / 6 / 6 |
+| Top bar | off by default; 39 + 1 hairline | **on by default**; 39 + 1 | 41 + 1 |
+| Address pill on hover | 40 (full bar) | **30** | 30 |
+| Tab row / pitch | 32 / 34 | **34 / 36** | 34 / 37 |
+| Sidebar default / min / max | 250 / 206 / 520 | 250 / 206 / **440** | 245 / 190 / 480 |
+| Drag past min | clamps | **hides the sidebar** | hides the sidebar |
+
 ## Geometry read from the running app (M0)
 
 | Item | Value |

@@ -245,8 +245,8 @@ struct WindowView: View {
         }
         // Apply padding similar to regular sidebar: remove padding when sidebar/AI is visible on that side
         // When sidebar is on left, AI appears on right (trailing); when sidebar is on right, AI appears on left (leading)
-        .padding(.trailing, !bordered || (sidebarVisible && sidebarOnRight) || (aiVisible && sidebarOnLeft) ? 0 : 8)
-        .padding(.leading, !bordered || (sidebarVisible && sidebarOnLeft) || (aiVisible && sidebarOnRight) ? 0 : 8)
+        .padding(.trailing, !bordered || (sidebarVisible && sidebarOnRight) || (aiVisible && sidebarOnLeft) ? 0 : VeilDesign.contentFrame)
+        .padding(.leading, !bordered || (sidebarVisible && sidebarOnLeft) || (aiVisible && sidebarOnRight) ? 0 : VeilDesign.contentFrame)
     }
 
     @ViewBuilder
@@ -327,7 +327,7 @@ struct WindowView: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.bottom, bordered ? 8 : 0)
+        .padding(.bottom, bordered ? VeilDesign.contentFrame : 0)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
