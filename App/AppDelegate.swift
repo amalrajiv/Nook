@@ -53,8 +53,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 
     /// Sparkle updater controller for automatic app updates
     lazy var updaterController: SPUStandardUpdaterController = {
+        #if VEIL_BUILD
+        // VEIL updates by merging upstream releases into the fork, never through Nook's appcast.
+        return SPUStandardUpdaterController(
+            startingUpdater: false, updaterDelegate: self, userDriverDelegate: nil)
+        #else
         return SPUStandardUpdaterController(
             startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
+        #endif
     }()
 
     // MARK: - Application Lifecycle

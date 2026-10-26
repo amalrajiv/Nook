@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> **VEIL fork:** read [VEIL.md](VEIL.md) first; its rules take precedence. @VEIL.md
+
 This file provides guidance to Claude Code when working with code in this repository.
 
 ## Project Overview

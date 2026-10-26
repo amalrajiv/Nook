@@ -114,13 +114,15 @@ struct NookCommands: Commands {
         // App Menu Section (under Nook)
         CommandGroup(after: .appInfo) {
             Divider()
-            Button("Make Nook Default Browser") {
+            Button("Make VEIL Default Browser") {
                 browserManager.setAsDefaultBrowser()
             }
 
+            #if !VEIL_BUILD
             Button("Check for Updates...") {
                 browserManager.appDelegate?.updaterController.checkForUpdates(nil)
             }
+            #endif
         }
         
 
