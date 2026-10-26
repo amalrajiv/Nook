@@ -175,8 +175,25 @@ struct WebsiteView: View {
     @State private var hoveredLink: String?
     @State private var isCommandPressed: Bool = false
     @State private var isDropTargeted: Bool = false
+    #if VEIL_BUILD
+    @ObservedObject private var dragSession = NookDragSessionManager.shared
+    #endif
     
     private let dragCoordinateSpace = "splitPreview"
+
+    /// Whether the split cards show. Nook shows them once a tab is dragged over the page; Dia
+    /// shows them as soon as a tab that could split is picked up, while the pointer is still over
+    /// the sidebar, which is how people find split view.
+    private var showsSplitCards: Bool {
+        if splitManager.getSplitState(for: windowState.id).isPreviewActive { return true }
+        #if VEIL_BUILD
+        guard let itemID = dragSession.draggedItem?.tabId,
+              let item = browserManager.tabs.item(itemID), !item.isFolder else { return false }
+        return windowState.split != nil || itemID != windowState.selectedItemID
+        #else
+        return false
+        #endif
+    }
 
     private var cornerRadius: CGFloat {
         nookSettings.hideWebContentBorder ? 0 : NookDesign.Radius.md
@@ -293,7 +310,7 @@ struct WebsiteView: View {
             }
 
             // Split preview overlay - shows cards during drag operations
-            if splitManager.getSplitState(for: windowState.id).isPreviewActive {
+            if showsSplitCards {
                 SplitPreviewOverlay()
                     .environmentObject(splitManager)
                     .environmentObject(browserManager)
@@ -301,7 +318,7 @@ struct WebsiteView: View {
                     .coordinateSpace(name: dragCoordinateSpace)
                     .animation(
                         NookDesign.Motion.spring,
-                        value: splitManager.getSplitState(for: windowState.id).isPreviewActive
+                        value: showsSplitCards
                     )
             }
 

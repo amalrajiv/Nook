@@ -16,7 +16,13 @@ struct SplitCardView: View {
     var accentColor: Color = .blue
     
     private var currentTextColor: Color {
+        #if VEIL_BUILD
+        // Nook used the raw accent over a fixed white: a grey accent vanished on the dark card,
+        // and white vanished on the light one. The theme's title tint reads in both.
+        isTabHovered ? NookDesign.Surface.titleTint(accent: accentColor) : .primary
+        #else
         isTabHovered ? accentColor : .white
+        #endif
     }
     
     var body: some View {
@@ -38,7 +44,12 @@ struct SplitCardView: View {
                 .strokeBorder(currentTextColor, style: StrokeStyle(lineWidth: 2, dash: [7,10]))
                 .opacity(0.3)
         }
+        #if VEIL_BUILD
+        // Dia's cards: 313 x 521 at rest, 361 x 599 under the pointer (with the 8pt padding).
+        .frame(width: isTabHovered ? 345 : 297, height: isTabHovered ? 583 : 505)
+        #else
         .frame(width: 237, height: 394)
+        #endif
         .padding(8)
         .background(
             Color(currentTextColor)
@@ -46,5 +57,6 @@ struct SplitCardView: View {
         )
         .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.lg))
         .animation(NookDesign.Motion.standard, value: currentTextColor)
+        .animation(NookDesign.Motion.spring, value: isTabHovered)
     }
 }
