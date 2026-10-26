@@ -191,25 +191,28 @@ public enum NookDesign {
         /// color. Inactive windows blend further toward that background, approximating the dimming
         /// NSVisualEffectView.followsWindowActiveState used to give the old blur for free.
         public static func containerGradient(accent: Color, isActive: Bool) -> LinearGradient {
-            // VEIL: Dia's window colors. A neutral base carries the space accent, strongest at the
-            // top, and the base lightens and greys toward the bottom (measured on Dia: dark
-            // #46312a -> #4c3f39, light #eed2c7 -> #f2ded7 for an orange profile). Inactive
-            // windows keep half the accent. Nook's version blended the accent into
-            // .windowBackgroundColor and faded to it.
-            let strength: CGFloat = isActive ? 1 : 0.5
+            // VEIL: Dia's window colors. One color for the whole window, the space's hue at a fixed
+            // brightness, that only loses a little saturation toward the bottom, so it reads as a
+            // solid tint rather than a gradient. Measured on Dia for an orange profile: dark
+            // #47312b -> #4b3d39 (brightness 0.28 -> 0.29, saturation 0.39 -> 0.24), light
+            // #eed2c9 -> #f2dcd5 (0.93 -> 0.95, 0.155 -> 0.12). Saturations here are fractions of
+            // the accent's own, so a grey space stays grey. Inactive windows keep 60%.
+            // Nook's version blended the accent into .windowBackgroundColor and faded to it.
+            let strength: CGFloat = isActive ? 1 : 0.6
             #if os(macOS)
             let tint = NSColor(accent).usingColorSpace(.sRGB) ?? NSColor(accent)
-            func stop(dark: NSColor, darkAmount: CGFloat, light: NSColor, lightAmount: CGFloat) -> Color {
+            var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+            tint.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+            func stop(dark: (saturation: CGFloat, brightness: CGFloat), light: (saturation: CGFloat, brightness: CGFloat)) -> Color {
                 Color(nsColor: NSColor(name: nil) { appearance in
                     let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                    let base = isDark ? dark : light
-                    return base.blended(withFraction: (isDark ? darkAmount : lightAmount) * strength, of: tint) ?? base
+                    let target = isDark ? dark : light
+                    return NSColor(hue: hue, saturation: min(1, saturation * target.saturation * strength),
+                                   brightness: target.brightness, alpha: 1)
                 })
             }
-            let top = stop(dark: NSColor(srgbRed: 0.169, green: 0.165, blue: 0.180, alpha: 1), darkAmount: 0.16,
-                           light: NSColor(srgbRed: 0.957, green: 0.945, blue: 0.941, alpha: 1), lightAmount: 0.22)
-            let end = stop(dark: NSColor(srgbRed: 0.267, green: 0.251, blue: 0.247, alpha: 1), darkAmount: 0.08,
-                           light: NSColor(srgbRed: 0.965, green: 0.949, blue: 0.945, alpha: 1), lightAmount: 0.13)
+            let top = stop(dark: (0.53, 0.28), light: (0.21, 0.93))
+            let end = stop(dark: (0.33, 0.295), light: (0.165, 0.95))
             #else
             let top = accent.opacity(0.16 * strength)
             let end = accent.opacity(0.08 * strength)

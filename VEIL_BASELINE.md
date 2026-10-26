@@ -31,8 +31,8 @@ Timings from a 60 Hz screen recording are ±17 ms.
 | Drag past min | clamps | **hides the sidebar** | hides the sidebar |
 | Favorites 1 / 2 / 3 / 4 / 5 / 6 | up to 4 a row | **1 / 2 / 3 / 4 / 5 a row; 6 → 3 × 2** | same |
 | Folder child indent | 20 | **16** | 16 |
-| Sidebar tint, dark (top → bottom) | accent 55% → window bg | **base #2b2a2e +16% accent → #44403f +8%** | #46312a → #4c3f39 (brown space) |
-| Sidebar tint, light | same | **#f4f1f0 +22% → #f6f2f1 +13%** | #eed2c7 → #f2ded7 |
+| Sidebar tint, dark (top → bottom) | accent 55% → window bg | **orange preset #47332c → #4b3e39** | #47312b → #4b3d39 (orange profile) |
+| Sidebar tint, light | same | **orange preset #edd3c9 → #f2ddd6** | #eed2c9 → #f2dcd5 |
 
 ## Geometry read from the running app (M0)
 
