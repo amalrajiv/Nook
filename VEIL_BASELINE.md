@@ -29,6 +29,10 @@ Timings from a 60 Hz screen recording are ±17 ms.
 | Tab row / pitch | 32 / 34 | **34 / 36** | 34 / 37 |
 | Sidebar default / min / max | 250 / 206 / 520 | 250 / 206 / **440** | 245 / 190 / 480 |
 | Drag past min | clamps | **hides the sidebar** | hides the sidebar |
+| Favorites 1 / 2 / 3 / 4 / 5 / 6 | up to 4 a row | **1 / 2 / 3 / 4 / 5 a row; 6 → 3 × 2** | same |
+| Folder child indent | 20 | **16** | 16 |
+| Sidebar tint, dark (top → bottom) | accent 55% → window bg | **base #2b2a2e +16% accent → #44403f +8%** | #46312a → #4c3f39 (brown space) |
+| Sidebar tint, light | same | **#f4f1f0 +22% → #f6f2f1 +13%** | #eed2c7 → #f2ded7 |
 
 ## Geometry read from the running app (M0)
 

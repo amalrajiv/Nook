@@ -463,13 +463,25 @@ struct TopBarView: View {
         let cleanHost =
             host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
 
+        #if VEIL_BUILD
+        // Dia flags a plain-http page with a dimmed scheme in front of the host.
+        var hostPart = AttributedString(cleanHost)
+        if url.scheme == "http" {
+            var scheme = AttributedString("http://")
+            scheme.foregroundColor = urlBarTextColor.opacity(0.35)
+            hostPart = scheme + hostPart
+        }
+        #else
+        let hostPart = AttributedString(cleanHost)
+        #endif
+
         if url.path.isEmpty || url.path == "/" {
-            return (AttributedString(cleanHost), "")
+            return (hostPart, "")
         } else {
             let displayTitle = title ?? cleanHost
             var titlePart = AttributedString(" / " + displayTitle)
             titlePart.foregroundColor = urlBarTextColor.opacity(0.35)
-            return (AttributedString(cleanHost), titlePart)
+            return (hostPart, titlePart)
         }
     }
 }

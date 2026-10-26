@@ -132,7 +132,8 @@ struct SpacesSideBarView: View {
                 isMenuButtonHovered: $isMenuButtonHovered,
                 onMenuTap: handleMenuTap,
                 onNewSpaceTap: showSpaceCreationDialog,
-                onMenuHover: handleMenuHover
+                onMenuHover: handleMenuHover,
+                onNewProfileTap: showProfileCreationDialog
             )
             .environmentObject(browserManager)
             .environment(windowState)
@@ -265,6 +266,95 @@ struct SpacesSideBarView: View {
     // MARK: - Context Menu
 
     private var sidebarContextMenu: some View {
+        #if VEIL_BUILD
+        veilSidebarContextMenu
+        #else
+        nookSidebarContextMenu
+        #endif
+    }
+
+    /// Dia's sidebar menu, mapped onto VEIL's actions: open, organise, new space or profile, layout.
+    private var veilSidebarContextMenu: some View {
+        Group {
+            Button { commandPalette.open() } label: {
+                Label("New Tab", systemImage: "plus.square")
+            }
+            Button { tabs.reopenLastClosed(in: windowState) } label: {
+                Label("Reopen Closed Tab", systemImage: "arrow.uturn.backward")
+            }
+
+            Divider()
+
+            Button {
+                if let spaceID = windowState.spaceID {
+                    tabs.createFolderForRename(in: .tabs(spaceID: spaceID), after: nil)
+                }
+            } label: {
+                Label("New Folder", systemImage: "folder.badge.plus")
+            }
+            if !windowState.isIncognito {
+                Menu {
+                    ForEach(LiveFolderMenuItem.all, id: \.title) { entry in
+                        Button {
+                            if let spaceID = windowState.spaceID { tabs.createLiveFolder(entry.source, in: spaceID) }
+                        } label: {
+                            Label(entry.title, systemImage: entry.symbol)
+                        }
+                    }
+                    Button {
+                        if let spaceID = windowState.spaceID { browserManager.presentFeedFolderPrompt(in: spaceID) }
+                    } label: {
+                        Label("New Feed Folder…", systemImage: "dot.radiowaves.up.forward")
+                    }
+                } label: {
+                    Label("New Live Folder", systemImage: "folder.badge.gearshape")
+                }
+
+                Divider()
+
+                Button { showSpaceCreationDialog() } label: {
+                    Label("New Space…", systemImage: "square.grid.2x2")
+                }
+                Button { showProfileCreationDialog() } label: {
+                    Label("New Profile…", systemImage: "person.badge.plus")
+                }
+            }
+
+            Divider()
+
+            Button { browserManager.toggleSidebar(for: windowState) } label: {
+                Label("Hide Sidebar", systemImage: nookSettings.sidebarPosition == .left ? "sidebar.left" : "sidebar.right")
+            }
+            sidebarPositionMenu
+
+            Divider()
+
+            Button {
+                if let spaceID = windowState.spaceID {
+                    tabs.children(of: .tabs(spaceID: spaceID)).forEach { tabs.remove($0.id) }
+                }
+            } label: {
+                Label("Close All Tabs", systemImage: "xmark")
+            }
+        }
+    }
+
+    private var sidebarPositionMenu: some View {
+        Menu {
+            ForEach(SidebarPosition.allCases) { position in
+                Toggle(isOn: Binding(
+                    get: { nookSettings.sidebarPosition == position },
+                    set: { _ in nookSettings.sidebarPosition = position }
+                )) {
+                    Label(position.displayName, systemImage: position.icon)
+                }
+            }
+        } label: {
+            Label("Position", systemImage: nookSettings.sidebarPosition.icon)
+        }
+    }
+
+    private var nookSidebarContextMenu: some View {
         Group {
             Button {
                 commandPalette.open()
@@ -405,6 +495,16 @@ struct SpacesSideBarView: View {
             }
             #endif
             Spacer(minLength: 0)
+            #if VEIL_BUILD
+            // Dia's header shows a downloads button while there are recent downloads.
+            if nookSettings.topBarAddressView && !browserManager.downloadManager.recentDownloads.isEmpty {
+                Button("Downloads", systemImage: "arrow.down.circle") {
+                    browserManager.showDownloads()
+                }
+                .symbolEffect(.bounce, value: browserManager.downloadManager.completedCount)
+                .nookIconButtons()
+            }
+            #endif
             if !nookSettings.topBarAddressView {
                 SidebarHistoryButtons()
                     .environmentObject(browserManager)
@@ -414,6 +514,28 @@ struct SpacesSideBarView: View {
     }
 
     // MARK: - Dialogs
+
+    /// A new space with its own website data store: separate logins, cookies and history.
+    private func showProfileCreationDialog() {
+        browserManager.dialogManager.showDialog(
+            SpaceCreationDialog(
+                onCreate: { name, accentHex in
+                    if let spaceID = tabs.createSpace(
+                        name: name.isEmpty ? "New Profile" : name,
+                        icon: "square.grid.2x2",
+                        accentHex: accentHex,
+                        after: tabs.orderedSpaces.last?.id,
+                        sharingLoginsWith: nil,
+                        profileName: name.isEmpty ? nil : name
+                    ) {
+                        tabs.setSpace(spaceID, in: windowState)
+                    }
+                    browserManager.dialogManager.closeDialog()
+                },
+                onCancel: { browserManager.dialogManager.closeDialog() }
+            )
+        )
+    }
 
     private func showSpaceCreationDialog() {
         browserManager.dialogManager.showDialog(

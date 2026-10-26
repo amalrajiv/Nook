@@ -27,8 +27,10 @@ public extension View {
     /// change animates; the row applies its own `.raised` elevation.
     func nookRowSelection(_ isSelected: Bool, radius: CGFloat = NookDesign.Radius.md) -> some View {
         let shape = NookDesign.Radius.shape(radius)
-        return background(shape.fill(isSelected ? NookDesign.Surface.raised : .clear))
-            .overlay(shape.strokeBorder(NookDesign.Surface.hairline.opacity(isSelected ? 1 : 0), lineWidth: NookDesign.Size.hairlineWidth))
+        // VEIL: Nook draws a 1pt 8% hairline; Dia's selected pill has a brighter 0.5pt edge and a soft shadow.
+        return background(shape.fill(isSelected ? NookDesign.Surface.raised : .clear)
+                .shadow(color: .black.opacity(isSelected ? 0.22 : 0), radius: 6, y: 1))
+            .overlay(shape.strokeBorder(Color.primary.opacity(isSelected ? 0.16 : 0), lineWidth: 0.5))
     }
 
     /// A sidebar chrome control or group: history, sidebar and AI toggles, bottom bar buttons,

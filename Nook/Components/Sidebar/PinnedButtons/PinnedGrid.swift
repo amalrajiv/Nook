@@ -158,16 +158,21 @@ struct PinnedGrid: View {
     private func columnCount(for width: CGFloat, itemCount: Int) -> Int {
         guard width > 0, itemCount > 0 else { return 1 }
         #if VEIL_BUILD
-        var cols = maxColumns   // Dia keeps tiles a fixed size: one favorite is one tile, not a full-width bar
+        // Dia's grid: as few rows as fit (up to five tiles a row, none narrower than 40pt),
+        // then the tiles spread evenly across them: 6 favorites are two rows of three.
+        let gap = NookDesign.Spacing.sm
+        let perRow = min(5, max(1, Int((width + gap) / (40 + gap))))
+        let rows = (itemCount + perRow - 1) / perRow
+        return (itemCount + rows - 1) / rows
         #else
         var cols = min(maxColumns, itemCount)
-        #endif
         while cols > 1 {
             let needed = CGFloat(cols) * NookDesign.Size.essentialsTile + CGFloat(cols - 1) * NookDesign.Spacing.sm
             if needed <= width { break }
             cols -= 1
         }
         return max(1, cols)
+        #endif
     }
 
     private func makeColumns(count: Int) -> [GridItem] {

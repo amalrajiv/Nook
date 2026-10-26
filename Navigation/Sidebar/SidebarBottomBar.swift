@@ -21,6 +21,8 @@ struct SidebarBottomBar: View {
     let onMenuTap: () -> Void
     let onNewSpaceTap: () -> Void
     let onMenuHover: (Bool) -> Void
+    /// VEIL: Nook's "New Profile" item was a placeholder that did nothing.
+    var onNewProfileTap: (() -> Void)? = nil
     
     var body: some View {
         HStack(alignment: .center, spacing: NookDesign.Spacing.xxs) {
@@ -92,10 +94,15 @@ struct SidebarBottomBar: View {
             Divider()
             
             Button("New Profile", systemImage: "person.badge.plus") {
-                // TODO: Show profile creation dialog
+                onNewProfileTap?()
             }
         } label:{
+            #if VEIL_BUILD
+            // Dia's footer ends in a chevron, not a plus.
+            Label("Actions", systemImage: "chevron.down")
+            #else
             Label("Actions", systemImage: "plus")
+            #endif
         }
         .menuStyle(.button)
         .nookIconButtons()

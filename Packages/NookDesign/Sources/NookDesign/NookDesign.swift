@@ -52,7 +52,7 @@ public enum NookDesign {
         // Depth 5 at 20 would eat 100 of a 390pt phone row.
         public static let folderIndent: CGFloat = 16
         #else
-        public static let folderIndent: CGFloat = 20
+        public static let folderIndent: CGFloat = 16   // VEIL: 20 in Nook; Dia indents a folder's tabs 16pt
         #endif
         public static let sidebarTop: CGFloat = 52     // the unified title band; the lights sit centred in it
         public static let trafficLights: CGFloat = 88  // leading space the traffic lights take in the title row
@@ -191,30 +191,28 @@ public enum NookDesign {
         /// color. Inactive windows blend further toward that background, approximating the dimming
         /// NSVisualEffectView.followsWindowActiveState used to give the old blur for free.
         public static func containerGradient(accent: Color, isActive: Bool) -> LinearGradient {
-            // VEIL: Nook blends 0.55 at the top and fades to the plain window background; Dia keeps a
-            // visible tint from top to bottom, so both stops carry the accent.
-            let topBlend = isActive ? 0.72 : 0.85
-            let bottomBlend = isActive ? 0.7 : 0.85
+            // VEIL: Dia's window colors. A neutral base carries the space accent, strongest at the
+            // top, and the base lightens and greys toward the bottom (measured on Dia: dark
+            // #46312a -> #4c3f39, light #eed2c7 -> #f2ded7 for an orange profile). Inactive
+            // windows keep half the accent. Nook's version blended the accent into
+            // .windowBackgroundColor and faded to it.
+            let strength: CGFloat = isActive ? 1 : 0.5
             #if os(macOS)
-            // Blend per appearance: `blended` freezes `.windowBackgroundColor` to whatever
-            // appearance is current when the body runs, which flips the top light/dark.
-            let base = NSColor(accent)
-            func tint(_ fraction: Double) -> Color {
+            let tint = NSColor(accent).usingColorSpace(.sRGB) ?? NSColor(accent)
+            func stop(dark: NSColor, darkAmount: CGFloat, light: NSColor, lightAmount: CGFloat) -> Color {
                 Color(nsColor: NSColor(name: nil) { appearance in
-                    var color = base
-                    appearance.performAsCurrentDrawingAppearance {
-                        color = base.blended(withFraction: fraction, of: .windowBackgroundColor) ?? base
-                    }
-                    return color
+                    let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                    let base = isDark ? dark : light
+                    return base.blended(withFraction: (isDark ? darkAmount : lightAmount) * strength, of: tint) ?? base
                 })
             }
-            let top = tint(topBlend)
-            let end = tint(bottomBlend)
+            let top = stop(dark: NSColor(srgbRed: 0.169, green: 0.165, blue: 0.180, alpha: 1), darkAmount: 0.16,
+                           light: NSColor(srgbRed: 0.957, green: 0.945, blue: 0.941, alpha: 1), lightAmount: 0.22)
+            let end = stop(dark: NSColor(srgbRed: 0.267, green: 0.251, blue: 0.247, alpha: 1), darkAmount: 0.08,
+                           light: NSColor(srgbRed: 0.965, green: 0.949, blue: 0.945, alpha: 1), lightAmount: 0.13)
             #else
-            // ponytail: iOS not built yet; NSColor.blended(withFraction:of:) has no UIKit
-            // equivalent. Flat opacity tint stands in until an iOS window chrome exists.
-            let top = accent.opacity(1 - topBlend)
-            let end = accent.opacity(1 - bottomBlend)
+            let top = accent.opacity(0.16 * strength)
+            let end = accent.opacity(0.08 * strength)
             #endif
             return LinearGradient(colors: [top, end], startPoint: .top, endPoint: .bottom)
         }

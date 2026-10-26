@@ -46,15 +46,11 @@ public struct TabFolderView: View {
             }
         }) {
             HStack(spacing: NookDesign.Spacing.md) {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: NookDesign.Size.rowGlyph - 1, weight: .semibold))
-                    .foregroundStyle(.tertiary)
-                    .rotationEffect(.degrees(isOpen ? 90 : 0))
-                    .animation(NookDesign.Motion.standard, value: isOpen)
-
-                Image(systemName: liveSymbol ?? (isOpen ? "folder.fill" : "folder"))
+                // VEIL: Dia's folder row — a muted filled folder, the bold name, then a small chevron
+                // after the name, and no item count. Nook led with the chevron and tinted the icon.
+                Image(systemName: liveSymbol ?? "folder.fill")
                     .font(.system(size: NookDesign.Size.spaceIcon, weight: .medium))
-                    .foregroundStyle(tabs.space(spaceID)?.accentColor ?? .secondary)
+                    .foregroundStyle(.secondary)
 
                 if isRenaming {
                     TextField("", text: $draftName)
@@ -77,6 +73,12 @@ public struct TabFolderView: View {
                         .truncationMode(.tail)
                 }
 
+                Image(systemName: "chevron.right")
+                    .font(.system(size: NookDesign.Size.rowGlyph - 2, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+                    .rotationEffect(.degrees(isOpen ? 90 : 0))
+                    .animation(NookDesign.Motion.standard, value: isOpen)
+
                 Spacer(minLength: NookDesign.Spacing.xs)
 
                 if let status = tabs.liveStatus[item.id] {
@@ -84,12 +86,6 @@ public struct TabFolderView: View {
                         .font(NookDesign.Font.caption)
                         .foregroundStyle(.secondary)
                         .help(liveStatusHelp(status))
-                }
-
-                if !isHovering {
-                    Text("\(tabs.children(of: .folder(itemID: item.id)).count)")
-                        .font(NookDesign.Font.caption)
-                        .foregroundStyle(.tertiary)
                 }
 
                 if isHovering && !isRenaming {

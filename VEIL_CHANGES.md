@@ -29,9 +29,16 @@ New VEIL-only files (`VEIL.md`, `VEIL_CHANGES.md`, `VEIL_BASELINE.md`, `Packages
 | `Navigation/Sidebar/SpacesSideBarView.swift` | With the top bar on, the space name sits in the traffic-light row (`#if VEIL_BUILD`) | Dia's one-row sidebar header | M2 |
 | `Navigation/Sidebar/SidebarHeader.swift` | With the top bar on, the second header row (sidebar toggle + space name) is not shown | Same | M2 |
 | `Nook/Components/Sidebar/TopBar/TopBarView.swift` | Sidebar toggle button before Back (`#if VEIL_BUILD`) | Dia keeps it in the top bar | M2 |
-| `Nook/Components/Sidebar/PinnedButtons/PinnedGrid.swift` | Always four columns; the "Drag to add Favorites" box only shows while dragging (body split into two helpers) | Dia's fixed-size tiles, no empty box | M2 |
-| `Packages/NookDesign/Sources/NookDesign/NookDesign.swift` | `containerGradient` blends 0.72 → 0.70 toward the window background (Nook: 0.55 → plain background); `unloadedOpacity` 0.55 → 1 | Dia's even, darker tint; Dia doesn't dim unloaded tabs | M2 |
+| `Nook/Components/Sidebar/PinnedButtons/PinnedGrid.swift` | Columns: fewest rows that fit (≤5 tiles a row, none under 40pt), tiles spread evenly over them (6 → 3×2); the "Drag to add Favorites" box only shows while dragging (body split into two helpers) | Dia's favorites grid resizes with the count; no empty box | M2 |
+| `Packages/NookDesign/Sources/NookDesign/NookDesign.swift` | `containerGradient` rebuilt on Dia's measured bases: dark top 16% accent over a cool near-black, bottom 8% over a lighter warm grey; light top 22%, bottom 13% over off-white; inactive windows half strength. `unloadedOpacity` 0.55 → 1; macOS `folderIndent` 20 → 16 | Dia's window tint (opaque, accent-saturated top fading lighter and greyer); Dia doesn't dim unloaded tabs; Dia's 16pt child indent | M2 |
 | `Packages/NookUI/Sources/NookUI/Rows/SpaceTab.swift` | Tab title font `bodyRegular` (Nook: `body`, medium) | Dia's regular-weight titles | M2 |
+| `Packages/NookDesign/Sources/NookDesign/View+Surface.swift` | `nookRowSelection`: selected fill gets a soft shadow and a 0.5pt edge | Dia's raised selected tab | M2 |
+| `Packages/NookUI/Sources/NookUI/Rows/ItemFavicon.swift`, `Packages/NookWeb/Sources/NookWeb/PageSession.swift` | Missing favicon shows `app.fill` in `.tertiary` (was the globe) | Dia's grey square placeholder | M2 |
+| `Packages/NookUI/Sources/NookUI/Rows/SpaceSeparator.swift` | Separator line shows only on hover (still ripples during a run) | Dia has no resting divider | M2 |
+| `Packages/NookUI/Sources/NookUI/Rows/TabFolderView.swift` | Folder row: muted `folder.fill`, small chevron after the title (was before the icon), no item count | Dia's group row | M2 |
+| `Nook/Components/Sidebar/TopBar/TopBarView.swift` | `http://` shown dimmed before the host on plain-HTTP pages (`#if VEIL_BUILD`) | Dia's insecure-scheme hint | M2 |
+| `Navigation/Sidebar/SpacesSideBarView.swift` | Sidebar background menu follows Dia's order (New Tab, Reopen, New Folder, New Live Folder, New Space, New Profile, Hide Sidebar, Position, Close All Tabs) under `VEIL_BUILD`; Nook's kept as `nookSidebarContextMenu`. Downloads button in the header row while recent downloads exist. `showProfileCreationDialog()` makes a space with its own profile | Dia's right-click menu and header downloads button; Nook's New Profile item was a no-op | M2 |
+| `Navigation/Sidebar/SidebarBottomBar.swift` | `onNewProfileTap` callback wired to "New Profile" (was a TODO); menu label `chevron.down` under `VEIL_BUILD` | New Profile works; Dia's footer chevron | M2 |
 
 ## Known Nook identity left in place (by design)
 

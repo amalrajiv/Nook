@@ -44,7 +44,7 @@ public struct SpaceSeparator: View {
                         / NookDesign.Motion.wavePeriod * 2 * .pi
                 )
                 .stroke(
-                    isWaving ? Color.accentColor : NookDesign.Surface.hairline,
+                    isWaving ? Color.accentColor : (isHovering ? NookDesign.Surface.hairline : Color.clear),   // VEIL: always visible in Nook
                     style: StrokeStyle(lineWidth: NookDesign.Size.hairlineWidth, lineCap: .round)
                 )
             }
