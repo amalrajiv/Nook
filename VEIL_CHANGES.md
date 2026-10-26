@@ -2,7 +2,7 @@
 
 Every Nook file VEIL edits, with why. When an upstream merge conflicts, this list says what VEIL meant.
 New VEIL-only files (`VEIL.md`, `VEIL_CHANGES.md`, `VEIL_BASELINE.md`, `Packages/VeilKit/`,
-`Nook/veil.icon/`) are not listed: they cannot conflict.
+`Nook/veil.icon/`, `Nook/Veil/`) are not listed: they cannot conflict.
 
 | File | Change | Why | Milestone |
 |---|---|---|---|
@@ -12,10 +12,21 @@ New VEIL-only files (`VEIL.md`, `VEIL_CHANGES.md`, `VEIL_BASELINE.md`, `Packages
 | `App/NookCommands.swift` | "Check for Updates..." hidden under `VEIL_BUILD`; "Make Nook Default Browser" → "Make VEIL Default Browser" | No Nook updater; app name (approved rebrand) | M0 |
 | `Nook/Assets.xcassets/nook-logo-1024.imageset/nook-logo-1024.png` | Image replaced with the VEIL logo (asset name kept) | Nook's trademark policy: own icon; keeps the three call sites untouched | M0 |
 | `CLAUDE.md` | One line under the title pointing to `VEIL.md` (`@VEIL.md` import) | Agents read VEIL's rules first | M0 |
+| `App/NookApp.swift` | Calls `VeilPolicy.apply(to:)` right after settings are created | AI off at every launch; DuckDuckGo default once | M1 |
+| `App/NookCommands.swift` | "Toggle AI Assistant" and "Organize Tabs" hidden under `VEIL_BUILD`; "Quit Nook" → "Quit VEIL" | No AI | M1 |
+| `App/Window/WindowView.swift` | Organize-tabs notification ignored under `VEIL_BUILD` | No AI from the shortcut | M1 |
+| `Nook/Components/Settings/SettingsUtils.swift` | Settings sidebar filters `VeilPolicy.hiddenSettingsTabs` (the AI tab); "Ad Blocker" tab → "Veil Guard" | No AI; Veil Guard name | M1 |
+| `Nook/Components/Settings/Tabs/Shortcuts.swift` | Hides `VeilPolicy.hiddenShortcutActions`; "twice for Nook" → VEIL | No AI | M1 |
+| `Nook/Components/Extensions/ExtensionLibraryView.swift` | Site panel row "Content Blocker" → "Veil Guard" | Veil Guard name | M1 |
+| `Nook/Components/WebsiteView/BlockedPageView.swift` | "Nook blocked this page" / "the ad blocker's filter lists" → Veil Guard | Veil Guard name | M1 |
+| `Packages/NookUI/Sources/NookUI/Settings/General.swift` | "Warn before quitting VEIL"; "Automatically update Nook" hidden when the bundle ID is VEIL's (packages don't see `VEIL_BUILD`) | App name; VEIL has no updater | M1 |
+| App-name text only (one string each): `Nook/Managers/DialogManager/DialogManager.swift`, `.../Dialogs/SettingsDialog.swift`, `AuthenticationManager.swift`, `BrowserManager.swift` (window titles), `Nook/Browser/TabsController+macOS.swift`, `Settings/Tabs/Developer.swift` (also the token path), `ExtensionPermissionView.swift`, `ExtensionLibraryMoreMenu.swift`, `Onboarding/Stages/HelloStage.swift`, `ImportStage.swift` | "Nook" → "VEIL" where the app names itself | Approved rebrand | M1 |
 
 ## Known Nook identity left in place (by design)
 
 - Logger subsystems and queue labels `com.gstudios.nook` (`SidebarPiPPanel`, `DevPick`, `TabStore`, `DevMCPServer`): internal only, so they stay to keep those files merge-clean. Stream VEIL logs with both subsystems, or by process name `VEIL`.
 - `LegacyDataMigration` copies data from two old Nook bundle IDs on first launch. Neither exists on this Mac, so it does nothing.
-- About 30 visible "Nook" strings (onboarding, settings, extension prompts, DevMCP text). Renaming them is M1, after the wording is approved.
+- Visible "Nook" left on purpose: the AI chat ("Ask Nook", hidden), update and what's-new cards (updater off), DevMCP agent instructions (developer-only), and on-disk names (`Application Support/Nook/…`, `Nook MCP` downloads folder, pasteboard type, script markers).
+- The ⇧⌘A and ⌥⇧⌘O key bindings are still registered with the shortcut manager, so those keys are swallowed but do nothing.
+- Developer Mode's local control server and its Agent Space stay available (off by default): they let a coding agent drive VEIL.
 - The iOS target (`NookiOS`) keeps Nook's identity; VEIL does not build it.

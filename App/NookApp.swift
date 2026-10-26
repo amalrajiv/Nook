@@ -33,6 +33,9 @@ struct NookApp: App {
 
     init() {
         let settings = NookSettingsService()
+        #if VEIL_BUILD
+        VeilPolicy.apply(to: settings)
+        #endif
         _settingsManager = State(initialValue: settings)
         let registry = WindowRegistry()
         _windowRegistry = State(initialValue: registry)

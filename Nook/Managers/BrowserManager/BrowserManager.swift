@@ -1019,7 +1019,7 @@ class BrowserManager: ObservableObject {
         }
 
         if let setup { nextWindowSetup = setup }
-        let newWindow = makeBrowserNSWindow(title: "Nook")
+        let newWindow = makeBrowserNSWindow(title: "VEIL")
         let contentView = windowContent(ContentView(), windowRegistry: windowRegistry, webViewCoordinator: webViewCoordinator)
         newWindow.contentView = NSHostingView(rootView: contentView)
         if let frame {
@@ -1102,7 +1102,7 @@ class BrowserManager: ObservableObject {
         windowRegistry.register(windowState)
         tabs.open(url: TabsController.homeURL, in: windowState, placement: .newTab)
 
-        let newWindow = makeBrowserNSWindow(title: "Private - Nook")
+        let newWindow = makeBrowserNSWindow(title: "Private - VEIL")
         let contentView = windowContent(ContentView(windowState: windowState), windowRegistry: windowRegistry, webViewCoordinator: webViewCoordinator)
         newWindow.contentView = NSHostingView(rootView: contentView)
         newWindow.center()

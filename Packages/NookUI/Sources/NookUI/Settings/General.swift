@@ -39,9 +39,12 @@ public struct SettingsGeneralTab: View {
             #if os(macOS)
             // Quitting and Sparkle updates are both macOS-only concepts.
             Section {
-                Toggle("Warn before quitting Nook", isOn: $settings.askBeforeQuit)
-                Toggle("Automatically update Nook", isOn: .constant(true))
-                    .disabled(true)
+                Toggle("Warn before quitting VEIL", isOn: $settings.askBeforeQuit)
+                // VEIL updates by merging upstream releases, so it has no updater to show.
+                if Bundle.main.bundleIdentifier != "com.amalrajiv.veil" {
+                    Toggle("Automatically update Nook", isOn: .constant(true))
+                        .disabled(true)
+                }
             }
 
             Section {

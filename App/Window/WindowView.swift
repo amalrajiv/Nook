@@ -161,6 +161,9 @@ struct WindowView: View {
         .onChange(of: windowRegistry.activeWindowId) { _, _ in applyAccent(spaceAccentHex) }
         // Handle organize tabs notification from keyboard shortcut manager
         .onReceive(NotificationCenter.default.publisher(for: .organizeTabsRequested)) { _ in
+            #if VEIL_BUILD
+            return
+            #endif
             guard windowRegistry.activeWindow?.id == windowState.id,
                   let spaceID = windowState.spaceID else { return }
             Task {

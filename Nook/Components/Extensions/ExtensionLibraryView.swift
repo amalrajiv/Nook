@@ -467,7 +467,7 @@ private struct ContentBlockerSiteRow: View {
     }
 
     var body: some View {
-        SiteSettingRow(icon: "shield.checkered", iconColor: .green, title: "Content Blocker", subtitle: subtitle) {
+        SiteSettingRow(icon: "shield.checkered", iconColor: .green, title: "Veil Guard", subtitle: subtitle) {
             Toggle("", isOn: $enabled)
                 .toggleStyle(NookSwitchToggleStyle())
         }

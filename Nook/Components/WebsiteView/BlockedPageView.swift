@@ -19,8 +19,8 @@ struct BlockedPageView: View {
             StandardDialog {
                 DialogHeader(
                     icon: "hand.raised",
-                    title: "Nook blocked this page",
-                    subtitle: "\(host) is on one of the ad blocker's filter lists."
+                    title: "Veil Guard blocked this page",
+                    subtitle: "\(host) is on one of Veil Guard's filter lists."
                 )
             } content: {
                 EmptyView()

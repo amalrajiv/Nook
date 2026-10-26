@@ -16,6 +16,12 @@ struct ShortcutsSettingsView: View {
     private var shortcutsByCategory: [ShortcutCategory: [KeyboardShortcut]] {
         let matching = keyboardShortcutManager.shortcuts.filter {
             searchText.isEmpty || $0.action.displayName.localizedCaseInsensitiveContains(searchText)
+        }.filter {
+            #if VEIL_BUILD
+            !VeilPolicy.hiddenShortcutActions.contains($0.action)
+            #else
+            true
+            #endif
         }
         return Dictionary(grouping: matching, by: { $0.action.category })
     }
@@ -30,7 +36,7 @@ struct ShortcutsSettingsView: View {
                     set: { WebsiteShortcutProfile.isFeatureEnabled = $0 }
                 ))
             } footer: {
-                Text("When a website uses the same shortcut, press once for the website, twice for Nook.")
+                Text("When a website uses the same shortcut, press once for the website, twice for VEIL.")
             }
 
             ForEach(ShortcutCategory.allCases, id: \.self) { category in

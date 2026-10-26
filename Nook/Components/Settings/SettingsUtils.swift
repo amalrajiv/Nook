@@ -27,7 +27,7 @@ enum SettingsTabs: String, Hashable, CaseIterable {
         case .appearance: return "Appearance"
         case .ai: return "AI"
         case .privacy: return "Privacy"
-        case .adBlocker: return "Ad Blocker"
+        case .adBlocker: return "Veil Guard"
         case .tweaks: return "Tweaks"
         case .airTrafficControl: return "Air Traffic Control"
         case .spaces: return "Spaces"
@@ -95,6 +95,15 @@ enum SettingsTabs: String, Hashable, CaseIterable {
 
     /// Sidebar groups, separated by visual spacing. A titled group gets a section header.
     static var sidebarGroups: [(title: String?, tabs: [SettingsTabs])] {
+        #if VEIL_BUILD
+        return veilSidebarGroups.map { ($0.title, $0.tabs.filter { !VeilPolicy.hiddenSettingsTabs.contains($0) }) }
+            .filter { !$0.tabs.isEmpty }
+        #else
+        return veilSidebarGroups
+        #endif
+    }
+
+    private static var veilSidebarGroups: [(title: String?, tabs: [SettingsTabs])] {
         [
             (nil, [.general, .appearance]),
             (nil, [.ai]),

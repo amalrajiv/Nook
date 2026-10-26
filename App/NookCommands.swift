@@ -19,6 +19,12 @@ struct NookCommands: Commands {
     @Environment(\.openSettings) private var openSettings
     @Environment(\.nookSettings) var nookSettings
 
+    #if VEIL_BUILD
+    private let veilAllowsTabOrganizer = false
+    #else
+    private let veilAllowsTabOrganizer = true
+    #endif
+
     init(browserManager: BrowserManager, windowRegistry: WindowRegistry, shortcutManager: KeyboardShortcutManager, tabOrganizerManager: TabOrganizerManager) {
         self.browserManager = browserManager
         self.windowRegistry = windowRegistry
@@ -105,7 +111,7 @@ struct NookCommands: Commands {
         // Replace the standard Quit menu item to route through showQuitDialog(),
         // which respects the "warn before quitting" setting
         CommandGroup(replacing: .appTermination) {
-            Button("Quit Nook") {
+            Button("Quit VEIL") {
                 browserManager.showQuitDialog()
             }
             .keyboardShortcut("q", modifiers: .command)
@@ -184,11 +190,13 @@ struct NookCommands: Commands {
             }
             .modifier(dynamicShortcut(.toggleSidebar))
 
+            #if !VEIL_BUILD
             Button("Toggle AI Assistant") {
                 browserManager.toggleAISidebar()
             }
             .modifier(dynamicShortcut(.toggleAIAssistant))
             .disabled(!nookSettings.showAIAssistant)
+            #endif
 
             Button("Toggle Picture in Picture") {
                 browserManager.tabs.activeWindowSession?.requestPictureInPicture()
@@ -199,7 +207,7 @@ struct NookCommands: Commands {
                     || !(browserManager.tabs.activeWindowSession.map { $0.hasVideoContent || $0.hasPiPActive } ?? false)
             )
 
-            if tabOrganizerManager.isAvailable {
+            if veilAllowsTabOrganizer, tabOrganizerManager.isAvailable {
                 Divider()
 
                 Button("Organize Tabs") {
