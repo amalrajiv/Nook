@@ -394,7 +394,10 @@ private struct TrafficLights: NSViewRepresentable {
 /// them at the bare inset before the toolbar is back, so they stay hidden until the exit ends.
 private final class TrafficLightsView: NSView {
     var visible = true {
-        didSet { if visible != oldValue { apply() } }
+        // Applied on every update, not only on a change: AppKit can show or hide the buttons
+        // itself (a window launched in the background, a titlebar rebuild), and a state that
+        // only changes on toggle never corrected it, leaving a docked sidebar without them.
+        didSet { apply() }
     }
     private var exitingFullScreen = false
     private var observers: [any NSObjectProtocol] = []
@@ -412,7 +415,11 @@ private final class TrafficLightsView: NSView {
             center.addObserver(forName: NSWindow.didExitFullScreenNotification, object: window, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { self?.setExiting(false) }
             },
-        ]
+        ] + [NSWindow.didBecomeKeyNotification, NSWindow.didBecomeMainNotification, NSWindow.didEndLiveResizeNotification].map { name in
+            center.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.apply() }
+            }
+        }
         apply()
     }
 
@@ -426,8 +433,10 @@ private final class TrafficLightsView: NSView {
     }
 
     private func apply() {
+        let hidden = !visible || exitingFullScreen
         for type in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
-            window?.standardWindowButton(type)?.isHidden = !visible || exitingFullScreen
+            guard let button = window?.standardWindowButton(type), button.isHidden != hidden else { continue }
+            button.isHidden = hidden
         }
     }
 }
