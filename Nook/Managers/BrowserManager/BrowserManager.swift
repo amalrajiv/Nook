@@ -671,6 +671,14 @@ class BrowserManager: ObservableObject {
 
     func toggleSidebar(for windowState: BrowserWindowState) {
         withAnimation(.easeInOut(duration: 0.1)) {
+            // A window that launched with the sidebar hidden starts at width 0 (see
+            // loadSidebarSettings); showing it must bring back the saved width, or the sidebar
+            // comes back as a zero-width column with its contents spilling off the window edge.
+            if !windowState.isSidebarVisible, windowState.sidebarWidth < NookDesign.Size.sidebarMin {
+                let width = max(windowState.savedSidebarWidth, NookDesign.Size.sidebarMin)
+                windowState.sidebarWidth = width
+                windowState.sidebarContentWidth = max(width - 16, 0)
+            }
             windowState.isSidebarVisible.toggle()
             // Width stays the same whether visible or hidden
         }
