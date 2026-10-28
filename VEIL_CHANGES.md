@@ -52,6 +52,7 @@ New VEIL-only files (`VEIL.md`, `VEIL_CHANGES.md`, `VEIL_BASELINE.md`, `Packages
 | `Nook/Components/WebsiteView/WebsiteView.swift` | Under `VEIL_BUILD` the split cards show as soon as a tab that could split is dragged (`showsSplitCards`), not only once it reaches the page | Dia shows "Add left/right split" at drag start, which is how split view gets found | M2 |
 | `Nook/Components/Browser/Window/SplitCardView.swift` | Under `VEIL_BUILD`: 313 × 521 at rest, 361 × 599 under the pointer; label `.primary` at rest and the theme's `titleTint` when hovered | Dia's card sizes; Nook's white label vanished in light mode and a grey accent vanished on the dark card | M2 |
 | `Nook/Components/Browser/Window/SplitDropCaptureView.swift` | Under `VEIL_BUILD` the drop hit area is the grown card (361 × 599) | A drop anywhere on the card splits | M2 |
+| `Nook/Managers/BrowserManager/BrowserManager.swift` | `toggleSidebar(for:)` restores the saved width when showing a sidebar narrower than `sidebarMin` (unflagged bug fix) | A window launched with the sidebar hidden starts at width 0; showing it left a zero-width column with the sidebar spilling off the window. VEIL's drag-to-hide made this easy to hit | M2 fix |
 ## Known Nook identity left in place (by design)
 
 - Logger subsystems and queue labels `com.gstudios.nook` (`SidebarPiPPanel`, `DevPick`, `TabStore`, `DevMCPServer`): internal only, so they stay to keep those files merge-clean. Stream VEIL logs with both subsystems, or by process name `VEIL`.
